@@ -10,7 +10,7 @@ public class GameDemo1 {
         Player player1 = new Player("Gigi");
         Player player2 = new Player("Dodo");
 
-        Dice dice = new Dice();
+        //Dice dice = new Dice();
 
         Game game = new Game(board, List.of(player1, player2), dice);
 
