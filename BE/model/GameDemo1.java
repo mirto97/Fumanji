@@ -10,7 +10,7 @@ public class GameDemo1 {
         Player player1 = new Player("Gigi");
         Player player2 = new Player("Dodo");
 
-        //Dice dice = new Dice();
+        Dice dice = new Dice();
 
         Game game = new Game(board, List.of(player1, player2), dice);
 
@@ -26,6 +26,7 @@ public class GameDemo1 {
                 System.out.println(player.getName() + " -> position " + player.getPosition() + " - " + turnCount);
             }
         }
+        
 
         if (game.getWinner() != null) {
             System.out.println("Winner: " + game.getWinner().getName());
