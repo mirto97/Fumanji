@@ -26,6 +26,7 @@ public class GameDemo1 {
                 System.out.println(player.getName() + " -> position " + player.getPosition() + " - " + turnCount);
             }
         }
+        
 
         if (game.getWinner() != null) {
             System.out.println("Winner: " + game.getWinner().getName());
