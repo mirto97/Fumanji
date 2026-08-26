@@ -1,3 +1,5 @@
+package entity;
+
 public class Square {
 
     private final int position;
@@ -9,5 +11,10 @@ public class Square {
 
     public int getPosition() {
         return position;
+    }
+
+    public void applyEffect(Player player, Game game) {
+        // qua è vuoto perchè le caselle vuote non fanno niente
+        // nelle classi figlie verrà overridato (con gli effetti delle caselle speciali)
     }
 }
