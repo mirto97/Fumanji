@@ -14,7 +14,12 @@ public class Game {
     private Player lastPlayerToMove;
 
     public Game(Board board, List<Player> players, Dice dice) {
-
+        if (board == null) {
+            throw new IllegalArgumentException("Board must not be null");
+        }
+        if (dice == null) {
+            throw new IllegalArgumentException("Dice must not be null");
+        }
         if (players == null || players.isEmpty()) {
             throw new IllegalArgumentException("At least one player is required");
         }
@@ -40,11 +45,38 @@ public class Game {
         }
     }
 
+    /**
+     * metodo default che lancia il dado e muove in avanti il player
+     * @param player
+     */
     public void rollAndMove(Player player) {
-        int roll = dice.roll();
-        lastRoll = roll;
+        int rollValue = roll(player);
+        moveForwardBy(player, rollValue);
+    }
+
+    /**
+     * metodo solo per tirare il dado e salvare il lastroll
+     * @param player
+     * @return
+     */
+    public int roll(Player player) {
+        int rollValue = dice.roll();
+        lastRoll = rollValue;
         lastPlayerToMove = player;
-        moveForwardBy(player, roll);
+        return rollValue;
+    }
+    /**
+     * metodo solo per muovere di lastroll steps nella direzione scelta all'input
+     * @param player
+     * @param forward
+     */
+    public void moveByChosenDirection(Player player, boolean forward) {
+        // se non specificato, va avanti 
+        if (forward || !board.isDirectionChoiceEnabled()) {
+            moveForwardBy(player, lastRoll);
+        } else {
+            moveBackwardBy(player, lastRoll);
+        }
     }
 
     /**
@@ -67,14 +99,14 @@ public class Game {
     }
 
     /**
-     *  " indietro
+     *  " indietro, con clamp al checkpoint del giocatore
      * @param player
      * @param steps
      */
     public void moveBackwardBy(Player player, int steps) {
         // per controllare che non vada a meno di 0, la partenza
         // Math.max returna il più grande tra i 2 valori in input { (a >= b) ? a : b; }      
-        int newPosition = Math.max(0, player.getPosition() - steps);
+        int newPosition = Math.max(player.getCheckpoint(), player.getPosition() - steps);
         player.setPosition(newPosition);
         landOnCurrentSquare(player);
     }
@@ -92,6 +124,22 @@ public class Game {
 
         Square square = board.getSquares().get(player.getPosition());
         square.applyEffect(player, this);
+    }
+
+    /**
+     * metodo per riportare il player all'inizio o all'ultimo checkpoint
+     * @param player
+     */
+    public void resetToStart(Player player) {
+        player.setPosition(player.getCheckpoint());
+    }
+
+    /**
+     * metodo per fissare l'ultimo checkpoint che ha raggiunto il player
+     * @param player
+     */
+    public void updateCheckpoint(Player player) {
+        player.setCheckpoint(player.getPosition());
     }
 
     public Board getBoard() {

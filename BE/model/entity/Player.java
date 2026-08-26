@@ -6,12 +6,23 @@ public class Player {
     private int position;
     private int snack;
     private int drink;
+    private int checkpoint;     // la posizione dell'ultimo checkpoint che ha raggiunto il player
 
     public Player(String name) {
         this.name = name;
         this.position = 0;
         this.snack = 0;
         this.drink = 0;
+        this.checkpoint = 0;
+    }
+
+    public int getCheckpoint() {
+        return checkpoint;
+    }
+
+    void setCheckpoint(int checkpoint) {
+        // per non farlo andare a meno della partenza
+        this.checkpoint = Math.max(0, checkpoint);
     }
 
     public String getName() {
@@ -22,7 +33,7 @@ public class Player {
         return position;
     }
 
-    public void setPosition(int position) {
+    void setPosition(int position) {
         this.position = position;
     }
 
