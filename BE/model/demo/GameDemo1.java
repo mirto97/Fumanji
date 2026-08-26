@@ -1,7 +1,11 @@
-
-
 import java.util.List;
 
+import entity.Board;
+import entity.Dice;
+import entity.Game;
+import entity.Player;
+
+// prima demo con tabellone da 10 spazi e 2 giocatori. funzionante
 public class GameDemo1 {
     public static void main(String[] args) {
 

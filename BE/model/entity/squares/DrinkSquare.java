@@ -1,0 +1,21 @@
+package entity.squares;
+
+import entity.Game;
+import entity.Player;
+import entity.Square;
+
+public class DrinkSquare extends Square {
+
+    private final int amount;
+
+    public DrinkSquare(int position, int amount) {
+        super(position);
+        this.amount = amount;
+    }
+
+    @Override
+    public void applyEffect(Player player, Game game) {
+        int newValue = Math.max(0, player.getDrink() + amount);
+        player.setDrink(newValue);
+    }
+}
