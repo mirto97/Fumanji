@@ -142,6 +142,17 @@ public class Game {
         player.setCheckpoint(player.getPosition());
     }
 
+    /**
+     * metodo per teletrasportare il giocatore (per i portali)
+     * @param player
+     * @param position
+     */
+    public void teleportTo(Player player, int position) {
+        player.setPosition(position);
+    }
+
+    // getter setter
+
     public Board getBoard() {
         return board;
     }
