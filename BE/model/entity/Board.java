@@ -7,6 +7,7 @@ public class Board {
 
     private final int finishPosition;
     private final List<Square> squares;
+    private boolean directionChoiceEnabled; // la possibilità si scegliere se andare avanti o indietro
 
     public Board(int size) {
         if (size <= 0) {
@@ -17,6 +18,15 @@ public class Board {
         for (int position = 0; position <= size; position++) {
             squares.add(new Square(position));
         }
+        this.directionChoiceEnabled = false;
+    }
+
+    public boolean isDirectionChoiceEnabled() {
+        return directionChoiceEnabled;
+    }
+
+    public void setDirectionChoiceEnabled(boolean directionChoiceEnabled) {
+        this.directionChoiceEnabled = directionChoiceEnabled;
     }
 
     public int getFinishPosition() {

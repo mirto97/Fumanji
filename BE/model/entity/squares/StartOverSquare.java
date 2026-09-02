@@ -12,8 +12,7 @@ public class StartOverSquare extends Square {
 
     @Override
     public void applyEffect(Player player, Game game) {
-        player.setPosition(0);
-        game.landOnCurrentSquare(player);   
-        // per ora la tengo, ma la partenza non penso avrà mai degli effetti o comunque sarà una possibilità remota
+        game.resetToStart(player);
+        game.landOnCurrentSquare(player);  
     }
 }
