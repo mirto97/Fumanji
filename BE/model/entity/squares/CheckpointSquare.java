@@ -19,4 +19,9 @@ public class CheckpointSquare extends Square {
     public String buildMessage(Player player) {
         return player.getName() + " ha raggiunto il checkpoint! Quindi deve fare 3 tiri di creazione";
     }
+
+    @Override
+    public boolean isMandatoryStop() {
+        return true;
+    }
 }

@@ -38,7 +38,8 @@ public class Game {
     private boolean awaitingForward;
     private boolean awaitingRespectCheckpoint;
     private List<Integer> awaitingOptions;
-
+    private Player awaitingPortalPlayer;
+    private List<Integer> awaitingPortalOptions;
 
 
 
@@ -124,17 +125,32 @@ public class Game {
         }
 
         player.setPosition(nextPosition);
-        int nextRemaining = remainingSteps - 1;
-        enqueue(() -> stepForward(player, nextRemaining));
+        
+        // fermo obbligatorio: se la regola e' attiva e la casella appena raggiunta e' un checkpoint,
+        // ci si ferma li' anche se restano passi (scartati), stesso principio del clamp esistente
+        Square nextSquare = board.getSquares().get(nextPosition);
+        if (board.isMandatoryCheckpointEnabled() && nextSquare.isMandatoryStop()) {
+            enqueue(() -> doLandOnCurrentSquare(player));
+            return;
+    }
+
+    int nextRemaining = remainingSteps - 1;
+    enqueue(() -> stepForward(player, nextRemaining));
     }
 
     public void moveBackwardBy(Player player, int steps) {
-        enqueue(() -> stepBackwardInternal(player, steps, true));
+        boolean respectCheckpoint = board.isMandatoryCheckpointEnabled();
+        enqueue(() -> stepBackwardInternal(player, steps, respectCheckpoint));
         processQueue();
     }
 
     private void stepBackwardInternal(Player player, int remainingSteps, boolean respectCheckpoint) {
         if (remainingSteps == 0) {
+            enqueue(() -> doLandOnCurrentSquare(player));
+            return;
+        }
+        // pavimento fisso a 0, sempre attivo indipendentemente dalla regola del checkpoint
+        if (player.getPosition() <= 0) {
             enqueue(() -> doLandOnCurrentSquare(player));
             return;
         }
@@ -179,7 +195,7 @@ public class Game {
 
 
 
-        public boolean isAwaitingBivioChoice() {
+    public boolean isAwaitingBivioChoice() {
         return awaitingOptions != null;
     }
 
@@ -218,8 +234,39 @@ public class Game {
     }
 
 
+    public void requestPortalChoice(Player player, List<Integer> options) {
+        awaitingPortalPlayer = player;
+        awaitingPortalOptions = options;
+    }
+
+    public boolean isAwaitingPortalChoice() {
+        return awaitingPortalOptions != null;
+    }
+
+    public List<Integer> getPortalOptions() {
+        return awaitingPortalOptions;
+    }
+
+    public void choosePortalDestination(Player player, int chosenPosition) {
+        if (awaitingPortalOptions == null) {
+            throw new IllegalStateException("No portal choice is pending");
+        }
+        if (player != awaitingPortalPlayer) {
+            throw new IllegalArgumentException("This player has no pending portal choice");
+        }
+        if (!awaitingPortalOptions.contains(chosenPosition)) {
+            throw new IllegalArgumentException("Chosen position is not among the available options");
+        }
+
+        awaitingPortalPlayer = null;
+        awaitingPortalOptions = null;
+
+        teleportTo(player, chosenPosition);
+    }
+
+
     /**
-     * (va bene solo per board senza bivi) metodo per giocare 1 turno di 1 giocatore 
+     * (va bene solo per board senza bivi e senza portali) metodo per giocare 1 turno di 1 giocatore 
      */
     public void playTurn() {
          

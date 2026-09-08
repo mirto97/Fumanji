@@ -35,4 +35,12 @@ public class Square {
     public List<Integer> getPreviousPositions() {
         return List.of(position - 1);
     }
+
+    /**
+     * metodo che overrideremo per fermare o no il giocatore
+     * @return
+     */
+    public boolean isMandatoryStop() {
+        return false;
+    }
 }
