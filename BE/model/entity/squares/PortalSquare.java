@@ -3,10 +3,11 @@ package entity.squares;
 import java.util.List;
 
 import entity.Game;
+import entity.InteractiveSquare;
 import entity.Player;
 import entity.Square;
 
-public class PortalSquare extends Square {
+public class PortalSquare extends Square implements InteractiveSquare {
 
     // posizioni dei portali collegati
     private final List<Integer> linkedPositions;
@@ -19,7 +20,7 @@ public class PortalSquare extends Square {
     @Override
     public void applyEffect(Player player, Game game) {
         if (linkedPositions.size() > 1) {
-            game.requestPortalChoice(player, linkedPositions);
+            game.requestChoice(player, linkedPositions);
         } else {
             game.teleportTo(player, linkedPositions.get(0));
         }
