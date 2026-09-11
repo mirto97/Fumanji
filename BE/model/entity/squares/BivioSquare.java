@@ -7,7 +7,7 @@ import entity.Square;
 
 public class BivioSquare extends Square implements InteractiveSquare {
 
-    // perchè plurale anche previousPositions? TODO
+    // perchè plurale anche previousPositions? TODO fatti spiegare
     
     private final List<Integer> nextPositions;
     private final List<Integer> previousPositions;

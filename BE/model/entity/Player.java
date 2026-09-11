@@ -13,7 +13,7 @@ public class Player {
         this.position = 0;
         this.snack = 0;
         this.drink = 0;
-        this.checkpoint = 0;
+        this.checkpoint = 0;    // il primo checkpoint è a partenza
     }
 
     public int getCheckpoint() {
