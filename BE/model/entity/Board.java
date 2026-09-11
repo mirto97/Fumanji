@@ -8,7 +8,9 @@ public class Board {
     private final int finishPosition;
     private final List<Square> squares;
     private boolean directionChoiceEnabled; // la possibilità si scegliere se andare avanti o indietro
+    private boolean mandatoryCheckpointEnabled; // per fermare i giocatori al checkpoint
 
+    // presto faccio il metodo per creare le board, con le regole associate
     public Board(int size) {
         if (size <= 0) {
             throw new IllegalArgumentException("Board size must be positive");
@@ -19,10 +21,29 @@ public class Board {
             squares.add(new Square(position));
         }
         this.directionChoiceEnabled = false;
+        this.mandatoryCheckpointEnabled = false;
     }
 
+    /**
+     * metodo che returna true se nella board creata c'è la possibilità di scegliere se tornare indietro o proseguire normalmente
+     * @return
+     */
     public boolean isDirectionChoiceEnabled() {
         return directionChoiceEnabled;
+    }
+    
+    /**
+     * metodo che returna true se nella board creata c'è l'obbligo di fermarsi al checkpoint
+     * @return
+     */
+    public boolean isMandatoryCheckpointEnabled() {
+        return mandatoryCheckpointEnabled;
+    }
+    
+    // getter setter
+
+    public void setMandatoryCheckpointEnabled(boolean mandatoryCheckpointEnabled) {
+        this.mandatoryCheckpointEnabled = mandatoryCheckpointEnabled;
     }
 
     public void setDirectionChoiceEnabled(boolean directionChoiceEnabled) {
@@ -36,4 +57,5 @@ public class Board {
     public List<Square> getSquares() {
         return squares;
     }
+
 }

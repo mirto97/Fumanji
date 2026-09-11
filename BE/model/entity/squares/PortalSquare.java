@@ -1,23 +1,28 @@
 package entity.squares;
 
+import java.util.List;
+
 import entity.Game;
+import entity.InteractiveSquare;
 import entity.Player;
 import entity.Square;
 
-public class PortalSquare extends Square {
+public class PortalSquare extends Square implements InteractiveSquare {
 
-    // posizione del portale collegato
-    private final int linkedPosition;
+    // posizioni dei portali collegati
+    private final List<Integer> linkedPositions;
 
-    // Bidirezionalità ottenuta semplicemente piazzando due istanze che si linkano a vicenda (PortalSquare(5, 15) e PortalSquare(15, 5))
-
-    public PortalSquare(int position, int linkedPosition) {
+    public PortalSquare(int position, List<Integer> linkedPositions) {
         super(position);
-        this.linkedPosition = linkedPosition;
+        this.linkedPositions = linkedPositions;
     }
 
     @Override
     public void applyEffect(Player player, Game game) {
-        game.teleportTo(player, linkedPosition);
+        if (linkedPositions.size() > 1) {
+            game.requestChoice(player, linkedPositions);
+        } else {
+            game.teleportTo(player, linkedPositions.get(0));
+        }
     }
 }

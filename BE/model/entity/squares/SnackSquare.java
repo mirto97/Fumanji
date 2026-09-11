@@ -6,7 +6,7 @@ import entity.Square;
 
 public class SnackSquare extends Square {
 
-    private final int amount;
+    private final int amount;   // può essere sia positivo che negativo
 
     public SnackSquare(int position, int amount) {
         super(position);
