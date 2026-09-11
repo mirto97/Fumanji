@@ -1,10 +1,12 @@
+package demo;
 
 import java.util.List;
-
+import java.util.Scanner;
 import entity.Board;
 import entity.Dice;
 import entity.Game;
 import entity.Player;
+import entity.Square;
 import entity.squares.BivioSquare;
 import entity.squares.CheckpointSquare;
 import entity.squares.DrinkSquare;
@@ -18,11 +20,9 @@ import entity.squares.StartOverSquare;
 
 public class GameDemo4 {
 
-    // TODO studiare e ricommentare
-
-    private static boolean pickSecondOption = false;
-
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
         Board board = new Board(55);
         board.setDirectionChoiceEnabled(true);
         board.setMandatoryCheckpointEnabled(true);
@@ -32,7 +32,7 @@ public class GameDemo4 {
         board.getSquares().set(5, new SnackSquare(5, 3));
         board.getSquares().set(7, new DrinkSquare(7, 2));
         board.getSquares().set(9, new CheckpointSquare(9));
-        board.getSquares().set(11, new StartOverSquare(11)); // spostato qui: zona molto trafficata, dopo il checkpoint
+        board.getSquares().set(11, new StartOverSquare(11)); // zona molto trafficata, dopo il checkpoint
 
         // bivio: ramo principale (15-19) o alternativo (25-29)
         board.getSquares().set(14, new BivioSquare(14, List.of(15, 25), List.of(13)));
@@ -63,8 +63,7 @@ public class GameDemo4 {
 
         int currentPlayerIndex = 0;
         int turnCount = 0;
-        int maxTurns = 300;
-        int moveCounter = 0;
+        int maxTurns = 500;
 
         while (game.getWinner() == null && turnCount < maxTurns) {
             if (currentPlayerIndex == 0) {
@@ -72,29 +71,38 @@ public class GameDemo4 {
             }
 
             Player currentPlayer = players.get(currentPlayerIndex);
-            moveCounter++;
 
-            int rollValue = game.roll(currentPlayer);
-            boolean goBackward = moveCounter % 5 == 0; // ogni 5 mosse testa la direzione indietro
-            game.moveByChosenDirection(currentPlayer, !goBackward);
-
-            while (game.isAwaitingChoice()) {
-                resolveChoiceAutomatically(game, currentPlayer);
-            }
-
-            System.out.println(currentPlayer.getName()
-                    + " -> position " + currentPlayer.getPosition()
-                    + " (dado: " + rollValue + (goBackward ? ", indietro" : "") + ")"
+            System.out.println();
+            System.out.println("=== Turno " + turnCount + " - " + currentPlayer.getName() + " ===");
+            System.out.println("Posizione attuale: " + currentPlayer.getPosition()
+                    + " (" + describeSquare(board, currentPlayer.getPosition()) + ")"
                     + " - snack: " + currentPlayer.getSnack()
                     + " drink: " + currentPlayer.getDrink()
-                    + " checkpoint: " + currentPlayer.getCheckpoint()
-                    + " - turno " + turnCount);
+                    + " checkpoint: " + currentPlayer.getCheckpoint());
+
+            int startPosition = currentPlayer.getPosition();
+            int rollValue = game.roll(currentPlayer);
+            System.out.println("Tiro: " + rollValue);
+
+            boolean forward = askDirection(scanner, currentPlayer);
+
+            game.clearMovementTrace();
+            game.moveByChosenDirection(currentPlayer, forward);
+
+            while (game.isAwaitingChoice()) {
+                resolveChoiceInteractively(game, currentPlayer, scanner);
+            }
+
+            printMoveSummary(game, board, currentPlayer, startPosition, forward);
 
             if (game.getWinner() == null) {
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
             }
         }
 
+        scanner.close();
+
+        System.out.println();
         if (game.getWinner() != null) {
             System.out.println("Winner: " + game.getWinner().getName());
         } else {
@@ -102,13 +110,63 @@ public class GameDemo4 {
         }
     }
 
-    private static void resolveChoiceAutomatically(Game game, Player player) {
-        List<Integer> options = game.getChoiceOptions();
-        int index = pickSecondOption && options.size() > 1 ? 1 : 0;
-        int chosen = options.get(index);
-        pickSecondOption = !pickSecondOption; // alterna per testare entrambe le opzioni nel corso della partita
+    private static boolean askDirection(Scanner scanner, Player player) {
+        while (true) {
+            System.out.println(player.getName() + ", vuoi andare avanti (a) o indietro (i)? ");
+            String line = scanner.nextLine().trim().toLowerCase();
+            if (line.equals("a") || line.equals("avanti")) {
+                return true;
+            }
+            if (line.equals("i") || line.equals("indietro")) {
+                return false;
+            }
+            System.out.println("Risposta non valida, scrivi 'a' o 'i'.");
+        }
+    }
 
-        System.out.println(player.getName() + " deve scegliere tra " + options + " -> sceglie " + chosen);
+    private static void resolveChoiceInteractively(Game game, Player player, Scanner scanner) {
+        List<Integer> options = game.getChoiceOptions();
+        System.out.println(player.getName() + " deve scegliere una destinazione! Opzioni: " + options);
+
+        Integer chosen = null;
+        while (chosen == null) {
+            System.out.println("Scegli una posizione tra " + options + ": ");
+            String line = scanner.nextLine().trim();
+            try {
+                int candidate = Integer.parseInt(line);
+                if (options.contains(candidate)) {
+                    chosen = candidate;
+                } else {
+                    System.out.println("Scelta non valida, riprova.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Inserisci un numero valido.");
+            }
+        }
+
         game.chooseDestination(player, chosen);
+    }
+
+    private static void printMoveSummary(Game game, Board board, Player player, int startPosition, boolean forward) {
+        List<Integer> trace = game.getMovementTrace();
+
+        System.out.print("Direzione: " + (forward ? "avanti" : "indietro") + " | Percorso: " + startPosition);
+        for (int position : trace) {
+            System.out.print(" -> " + position + " (" + describeSquare(board, position) + ")");
+        }
+        System.out.println();
+
+        System.out.println("Posizione finale: " + player.getPosition()
+                + " - snack: " + player.getSnack()
+                + " drink: " + player.getDrink()
+                + " checkpoint: " + player.getCheckpoint());
+    }
+
+    private static String describeSquare(Board board, int position) {
+        if (position == board.getFinishPosition()) {
+            return "ARRIVO";
+        }
+        Square square = board.getSquares().get(position);
+        return square.getClass().getSimpleName();
     }
 }

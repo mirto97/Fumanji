@@ -1,3 +1,5 @@
+package demo;
+
 import java.util.List;
 
 import entity.Board;

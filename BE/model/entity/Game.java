@@ -1,5 +1,6 @@
 package entity;
  
+import java.util.ArrayList;
 import java.util.List;
  
 public class Game {
@@ -17,6 +18,7 @@ public class Game {
     private boolean awaitingForward;
     private boolean awaitingRespectCheckpoint;
     private boolean awaitingContinueAfterChoice;
+    private final List<Integer> movementTrace = new ArrayList<>();
  
     public Game(Board board, List<Player> players, Dice dice) {
         if (board == null) {
@@ -119,14 +121,14 @@ public class Game {
             if (nextPosition > board.getFinishPosition()) {
                 // rimbalzo: il passo si riflette, si muove indietro di 1 invece che avanti,
                 // senza rispettare il checkpoint (stesso comportamento aritmetico di prima)
-                player.setPosition(currentPosition - 1);
+                movePlayerTo(player, currentPosition - 1);
                 // muove all'indietro dei rimanenti steps, ma - 1 che è l'arrivo, clean
                 moveBackwardByInternal(player, remaining - 1, false);
                 return;
             }
  
             // posiziona il player nella casella successiva e scala 1 passo dai rimanenti
-            player.setPosition(nextPosition);
+            movePlayerTo(player, nextPosition);
             remaining--;
  
             // fermo obbligatorio: se la regola e' attiva e la casella appena raggiunta e' un checkpoint,
@@ -189,7 +191,7 @@ public class Game {
  
             // prende la prima (e ora unica) casella successiva, ci posiziona il player e scala 1 passo dai rimanenti
             int nextPosition = options.get(0);
-            player.setPosition(nextPosition);
+            movePlayerTo(player, nextPosition);
             remaining--;
         }
  
@@ -230,7 +232,8 @@ public class Game {
         awaitingRespectCheckpoint = false;
         awaitingContinueAfterChoice = false;
     }
- 
+
+    
     /**
      * metodo che restituisce true se c'è la board rules sulla scelta del senso di marcia
      * @return
@@ -251,8 +254,8 @@ public class Game {
      * metodo per far scegliere la posizione al giocatore~
      * @param player
      * @param chosenPosition
-     */
-    public void chooseDestination(Player player, int chosenPosition) {
+    */
+   public void chooseDestination(Player player, int chosenPosition) {
         // controlla che ci siano effettivamente le opzioni
         if (awaitingOptions == null) {
             throw new IllegalStateException("No choice is pending");
@@ -265,20 +268,20 @@ public class Game {
         if (!awaitingOptions.contains(chosenPosition)) {
             throw new IllegalArgumentException("Chosen position is not among the available options");
         }
- 
+        
         // prende tutte le informazioni per la scelta
         Player waitingPlayer = awaitingPlayer;
         int remainingSteps = awaitingRemainingSteps;
         boolean forward = awaitingForward;
         boolean respectCheckpoint = awaitingRespectCheckpoint;
         boolean continueAfterChoice = awaitingContinueAfterChoice;
- 
+        
         // resetta le opzioni e il giocatore in attesa
         awaitingPlayer = null;
         awaitingOptions = null;
- 
+        
         // sposta il giocatore nella posizione scelta
-        waitingPlayer.setPosition(chosenPosition);
+        movePlayerTo(player, chosenPosition);
  
         // controlla se può continuare a proseguire
         if (!continueAfterChoice) {
@@ -297,11 +300,11 @@ public class Game {
     /**
      * metodo che richiama il metodo sotto, e basta (sinceramente non ho capito perchè...)  
      * @param player
-     */
-    public void landOnCurrentSquare(Player player) {
-        doLandOnCurrentSquare(player);
+    */
+   public void landOnCurrentSquare(Player player) {
+       doLandOnCurrentSquare(player);
     }
- 
+    
     /**
      * metodo che attiva gli effetti della casella su cui si finisce
      * @param player
@@ -312,21 +315,21 @@ public class Game {
             winner = player;
             return;
         }
- 
+        
         // prende la casella in questione specifica e applica gli effetti
         Square square = board.getSquares().get(player.getPosition());
         square.applyEffect(player, this);
     }
- 
+    
     /**
      * metodo che sposta il giocatore nella casella destinataria
      * @param player
      * @param position
-     */
-    public void teleportTo(Player player, int position) {
-        player.setPosition(position);
+    */
+   public void teleportTo(Player player, int position) {
+       movePlayerTo(player, position);
     }
- 
+    
     /**
      * metodo che riporta il giocatore all'ultimo cp raggiunto (oppure all'inizio)
      * @param player
@@ -334,21 +337,42 @@ public class Game {
     public void resetToStart(Player player) {
         player.setPosition(player.getCheckpoint());
     }
- 
+    
     /**
      * metodo che salva l'ultimo cp raggiunto dal giocatore
      * @param player
-     */
-    public void updateCheckpoint(Player player) {
-        player.setCheckpoint(player.getPosition());
+    */
+   public void updateCheckpoint(Player player) {
+       player.setCheckpoint(player.getPosition());
     }
-
+    
+    /**
+     * metodo che sposta il giocatore e tiene traccia del movimento
+     * @param player
+     * @param position
+     */
+    private void movePlayerTo(Player player, int position) {
+        player.setPosition(position);
+        movementTrace.add(position);
+    }
+    
+    /**
+     * metodo per pulire la cronologia di spostamenti
+     */
+    public void clearMovementTrace() {
+        movementTrace.clear();
+    }
+    
     // getter
- 
+
+    public List<Integer> getMovementTrace() {
+        return List.copyOf(movementTrace);
+    }
+    
     public Board getBoard() {
         return board;
     }
- 
+    
     public Player getWinner() {
         return winner;
     }
@@ -360,7 +384,7 @@ public class Game {
     public Player getLastPlayerToMove() {
         return lastPlayerToMove;
     }
- 
+    
     public List<Player> getPlayers() {
         return players;
     }
