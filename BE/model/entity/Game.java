@@ -395,6 +395,16 @@ public class Game {
     public void clearMovementTrace() {
         movementTrace.clear();
     }
+
+    // helper
+
+    public void addSnack(Player player, int amount) {
+        player.setSnack(Math.max(0, player.getSnack() + amount));
+    }
+
+    public void addDrink(Player player, int amount) {
+        player.setDrink(Math.max(0, player.getDrink() + amount));
+    }
     
     // getter
 
