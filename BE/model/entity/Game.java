@@ -1,7 +1,9 @@
 package entity;
  
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
  
 public class Game {
 
@@ -19,6 +21,8 @@ public class Game {
     private boolean awaitingRespectCheckpoint;
     private boolean awaitingContinueAfterChoice;
     private final List<Integer> movementTrace = new ArrayList<>();
+    private final Set<Integer> activatedPositions = new HashSet<>();
+    private boolean chainInProgress;
  
     public Game(Board board, List<Player> players, Dice dice) {
         if (board == null) {
@@ -31,7 +35,7 @@ public class Game {
             throw new IllegalArgumentException("At least one player is required");
         }
         this.board = board;
-        this.players = players;
+        this.players = List.copyOf(players);
         this.dice = dice;
         this.currentPlayerIndex = 0;
         this.winner = null;
@@ -163,39 +167,41 @@ public class Game {
      * @param respectCheckpoint
      */
     private void moveBackwardByInternal(Player player, int steps, boolean respectCheckpoint) {
-        // steps rimanenti
+        // steps rimasti
         int remaining = steps;
- 
-        // ciclo per muovere all'indietro fino a finire gli steps
+
+        // ciclo per muovere finchè rimangono steps
         while (remaining > 0) {
             // pavimento fisso a 0, sempre attivo indipendentemente dalla regola del checkpoint
             if (player.getPosition() <= 0) {
                 break;
             }
-            // controlla se c'è la regola del blocco al cp, in caso rompe il ciclo
-            if (respectCheckpoint && player.getPosition() <= player.getCheckpoint()) {
-                break;
-            }
- 
-            // prende la casella attuale del giocatore e tutte le caselle su cui può proseguire
+
+            // prende la posizione del giocatore, la casella su cui è e tutte le caselle precedenti
             int currentPosition = player.getPosition();
             Square currentSquare = board.getSquares().get(currentPosition);
             List<Integer> options = currentSquare.getPreviousPositions();
- 
-            // se sono più di 1, è ad un bivio, quindi chiama il metodo
+
+            // se ce n'è più di 1, è un bivio
             if (options.size() > 1) {
-                // mandando le informazioni, più la direzione indietro e anche se c'è la possibilità di andare oltre al cp o no
                 requestBivioChoice(player, options, remaining, false, respectCheckpoint);
                 return;
             }
- 
-            // prende la prima (e ora unica) casella successiva, ci posiziona il player e scala 1 passo dai rimanenti
+
+            // prende la prima (e ora unica) casella tra le possibilità, muove il giocatore e toglie uno step
             int nextPosition = options.get(0);
             movePlayerTo(player, nextPosition);
             remaining--;
+
+            // fermo obbligatorio simmetrico al forward: casella appena raggiunta, non quella di partenza
+            Square nextSquare = board.getSquares().get(nextPosition);
+            // se c'è la regola, azzera tutti gli steps rimanenti, costringendo il giocatore a fermarsi
+            if (respectCheckpoint && nextSquare.isMandatoryStop()) {
+                remaining = 0;
+            }
         }
- 
-        // attiva gli effetti della casella su cui è finito il giocatore
+
+        // attiva gli effetti della casella su cui si trova il player
         doLandOnCurrentSquare(player);
     }
  
@@ -310,15 +316,42 @@ public class Game {
      * @param player
      */
     private void doLandOnCurrentSquare(Player player) {
-        // se ha raggiunto il traguard, assegna il vincitore
-        if (player.getPosition() == board.getFinishPosition()) {
-            winner = player;
-            return;
+        // quando la catena inizia, chainInProgress = false, isChainStart = true, poi si invertono...
+        boolean isChainStart = !chainInProgress;
+        // quindi se è appena iniziata...
+        if (isChainStart) {
+            // diciamo che ora è in progress e svuotiamo le caselle che sono state attivate
+            chainInProgress = true;
+            activatedPositions.clear();
         }
-        
-        // prende la casella in questione specifica e applica gli effetti
-        Square square = board.getSquares().get(player.getPosition());
-        square.applyEffect(player, this);
+
+        // proviamo ad attivare gli effetti ma senza catch, che non ci serve
+        try {
+            // controlliamo se ha vinto
+            if (player.getPosition() == board.getFinishPosition()) {
+                winner = player;
+                return;
+            }
+
+            // prendiamo la posizione del giocatore e controlliamo che quella casella non è già stata attivata
+            int position = player.getPosition();
+            if (!activatedPositions.add(position)) {
+                // se è gia' attivata in questo turno di movimento: niente effetto, si comporta da casella base, quindi return
+                return;
+            }
+
+            // prendiamo la casella nella posizione del giocatore e attiviamo l'effetto
+            Square square = board.getSquares().get(position);
+            square.applyEffect(player, this);
+        } finally {
+            if (isChainStart) {
+                chainInProgress = false;
+            }
+            // pulisce il booleano anche nei casi di return
+
+            // Senza finally dovrei ripetere chainInProgress = false prima di ogni return — facile dimenticarne uno in futuro, lasciando il flag bloccato a true per sempre (il guardrail smetterebbe di azzerare activatedPositions ad ogni nuovo turno). 
+            // C'è anche il caso di un'eccezione che scappa da square.applyEffect(...): senza finally il flag resterebbe true per sempre anche lì. Col finally il reset è garantito qualunque sia la via d'uscita.
+        }
     }
     
     /**
