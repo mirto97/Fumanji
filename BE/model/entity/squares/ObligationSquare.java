@@ -12,7 +12,7 @@ public class ObligationSquare extends Square {
 
     @Override
     public void applyEffect(Player player, Game game) {
-        System.out.println(buildMessage(game));
+        System.out.println(buildMessage(player, game));
     }
 
     /**
@@ -23,19 +23,8 @@ public class ObligationSquare extends Square {
      * @param game
      * @return
      */
-    public String buildMessage(Game game) {
-        StringBuilder builder = new StringBuilder();
-        int finishPosition = game.getBoard().getFinishPosition();
-
-        for (Player p : game.getPlayers()) {
-            builder.append(p.getName())
-                   .append(" ")
-                   .append(p.getPosition())
-                   .append("/")
-                   .append(finishPosition)
-                   .append("\n");
-        }
-
-        return builder.toString();
+    public String buildMessage(Player player, Game game) {
+        return player.getName() + " deve far fare un obbligo ad un altro giocatore"
+            + " (es. togliergli o dargli uno snack o un drink)";
     }
 }

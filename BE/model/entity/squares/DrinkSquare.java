@@ -15,7 +15,6 @@ public class DrinkSquare extends Square {
 
     @Override
     public void applyEffect(Player player, Game game) {
-        int newValue = Math.max(0, player.getDrink() + amount);
-        player.setDrink(newValue);
+        game.addDrink(player, amount);
     }
 }
