@@ -1,8 +1,8 @@
-package entity.squares;
+package com.project.fumanji.entity.squares;
 
-import entity.Game;
-import entity.Player;
-import entity.Square;
+import com.project.fumanji.entity.Game;
+import com.project.fumanji.entity.Player;
+import com.project.fumanji.entity.Square;
 
 public class RollAgainSquare extends Square {
 
