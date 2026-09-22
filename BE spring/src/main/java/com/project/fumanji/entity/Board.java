@@ -9,6 +9,7 @@ public class Board {
     private final List<Square> squares;
     private final boolean directionChoiceEnabled;   // se puoi scegliere di andare avanti o indietro
     private final boolean mandatoryCheckpointEnabled;   // se c'è l'obbligo di fermarsi al checkpoint
+    private final boolean backwardAllowedAfterCheckpoint;   // se si può andare tornare indietro dopo aver raggiunto un cp
 
     /**
      * metodo pubblico per creare board semplici
@@ -22,6 +23,7 @@ public class Board {
         this.squares = defaultSquares(size);
         this.directionChoiceEnabled = false;
         this.mandatoryCheckpointEnabled = false;
+        this.backwardAllowedAfterCheckpoint = true;
     }
 
     /**
@@ -31,15 +33,16 @@ public class Board {
      * @param directionChoiceEnabled
      * @param mandatoryCheckpointEnabled
      */
-    private Board(int finishPosition, List<Square> squares, boolean directionChoiceEnabled, boolean mandatoryCheckpointEnabled) {
+    private Board(int finishPosition, List<Square> squares, boolean directionChoiceEnabled, boolean mandatoryCheckpointEnabled, boolean backwardAllowedAfterCheckpoint) {
         this.finishPosition = finishPosition;
         this.squares = squares;
         this.directionChoiceEnabled = directionChoiceEnabled;
         this.mandatoryCheckpointEnabled = mandatoryCheckpointEnabled;
+        this.backwardAllowedAfterCheckpoint = backwardAllowedAfterCheckpoint;
     }
 
     /**
-     * TODO
+     * TODO mi sa che mette le square di base
      * @param size
      * @return
      */
@@ -61,6 +64,10 @@ public class Board {
     }
 
     // getter
+
+    public boolean isBackwardAllowedAfterCheckpoint() {
+        return backwardAllowedAfterCheckpoint;
+    }
 
     public int getFinishPosition() {
         return finishPosition;
@@ -88,6 +95,7 @@ public class Board {
         private final List<Square> squares;
         private boolean directionChoiceEnabled;
         private boolean mandatoryCheckpointEnabled;
+        private boolean backwardAllowedAfterCheckpoint;
 
         /**
          * metodo per il Builder della board di base, TODO privato perchè?
@@ -143,12 +151,17 @@ public class Board {
             return this;
         }
 
+        public Builder backwardAllowedAfterCheckpoint(boolean enabled) {
+            this.backwardAllowedAfterCheckpoint = enabled;
+            return this;
+        }
+
         /**
          * metodo che costruisce la board con le dovute informazioni
          * @return
          */
         public Board build() {
-            return new Board(finishPosition, List.copyOf(squares), directionChoiceEnabled, mandatoryCheckpointEnabled);
+            return new Board(finishPosition, List.copyOf(squares), directionChoiceEnabled, mandatoryCheckpointEnabled, backwardAllowedAfterCheckpoint);
         }
     }
 }

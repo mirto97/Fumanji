@@ -172,8 +172,13 @@ public class Game {
 
         // ciclo per muovere finchè rimangono steps
         while (remaining > 0) {
-            // pavimento fisso a 0, sempre attivo indipendentemente dalla regola del checkpoint
+            // pavimento fisso a 0, sempre attivo indipendentemente dalla regola del cp
             if (player.getPosition() <= 0) {
+                break;
+            }
+            // se c'è la regola che non si può andare indietro oltre al cp
+            // e se il giocatore è oltre al cp, non può andare oltre
+            if (!board.isBackwardAllowedAfterCheckpoint() && player.getPosition() <= player.getCheckpoint()) {
                 break;
             }
 

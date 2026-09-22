@@ -7,6 +7,8 @@ import com.project.fumanji.entity.Board;
 @Component
 public class BoardAssembler {
 
+    // TODO commenta
+
     private final SquareMapper squareMapper;
 
     public BoardAssembler(SquareMapper squareMapper) {
@@ -16,7 +18,8 @@ public class BoardAssembler {
     public Board toDomain(BoardEntity entity) {
         Board.Builder builder = Board.builder(entity.getFinishPosition())
                 .directionChoiceEnabled(entity.isDirectionChoiceEnabled())
-                .mandatoryCheckpointEnabled(entity.isMandatoryCheckpointEnabled());
+                .mandatoryCheckpointEnabled(entity.isMandatoryCheckpointEnabled())
+                .backwardAllowedAfterCheckpoint(entity.isBackwardAllowedAfterCheckpoint());
 
         for (SquareEntity squareEntity : entity.getSquares()) {
             builder.square(squareEntity.getPosition(), squareMapper.toDomain(squareEntity));

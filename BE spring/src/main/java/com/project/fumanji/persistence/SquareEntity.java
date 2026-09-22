@@ -20,7 +20,7 @@ public abstract class SquareEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "board_id", nullable = false)
+    @JoinColumn(name = "board_id")
     private BoardEntity board;
 
     private int position;

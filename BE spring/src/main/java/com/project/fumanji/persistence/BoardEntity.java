@@ -20,6 +20,7 @@ public class BoardEntity {
     private int finishPosition;
     private boolean directionChoiceEnabled;
     private boolean mandatoryCheckpointEnabled;
+    private boolean backwardAllowedAfterCheckpoint;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SquareEntity> squares = new ArrayList<>();
@@ -27,10 +28,11 @@ public class BoardEntity {
     protected BoardEntity() {
     }
 
-    public BoardEntity(int finishPosition, boolean directionChoiceEnabled, boolean mandatoryCheckpointEnabled) {
+    public BoardEntity(int finishPosition, boolean directionChoiceEnabled, boolean mandatoryCheckpointEnabled, boolean backwardAllowedAfterCheckpoint) {
         this.finishPosition = finishPosition;
         this.directionChoiceEnabled = directionChoiceEnabled;
         this.mandatoryCheckpointEnabled = mandatoryCheckpointEnabled;
+        this.backwardAllowedAfterCheckpoint = backwardAllowedAfterCheckpoint;
     }
 
     public void addSquare(SquareEntity square) {
@@ -56,5 +58,9 @@ public class BoardEntity {
 
     public List<SquareEntity> getSquares() {
         return squares;
+    }
+
+    public boolean isBackwardAllowedAfterCheckpoint() {
+        return backwardAllowedAfterCheckpoint;
     }
 }

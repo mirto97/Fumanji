@@ -29,6 +29,8 @@ import com.project.fumanji.persistence.squares.StartOverSquareEntity;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SquareMapper {
 
+    // TODO commenta
+
     @SubclassMapping(source = StartOverSquareEntity.class, target = StartOverSquare.class)
     @SubclassMapping(source = MoveBackSquareEntity.class, target = MoveBackSquare.class)
     @SubclassMapping(source = MoveForwardSquareEntity.class, target = MoveForwardSquare.class)
