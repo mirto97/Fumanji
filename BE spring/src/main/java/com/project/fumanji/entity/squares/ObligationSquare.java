@@ -6,8 +6,11 @@ import com.project.fumanji.entity.Square;
 
 public class ObligationSquare extends Square {
 
-    public ObligationSquare(int position) {
+    private final String message;
+
+    public ObligationSquare(int position, String message) {
         super(position);
+        this.message = message;
     }
 
     @Override
@@ -24,7 +27,6 @@ public class ObligationSquare extends Square {
      * @return
      */
     public String buildMessage(Player player, Game game) {
-        return player.getName() + " deve far fare un obbligo ad un altro giocatore"
-            + " (es. togliergli o dargli uno snack o un drink)";
+        return message.replace("{player}", player.getName());
     }
 }
