@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Sql(scripts = "/seed-og-board.sql", executionPhase = BEFORE_TEST_CLASS)
+@Sql(scripts = "/seed-og-board.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS )
 class GameControllerIT {
 
     @Autowired
