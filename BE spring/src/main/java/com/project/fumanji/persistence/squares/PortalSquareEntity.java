@@ -7,6 +7,7 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 
 import com.project.fumanji.persistence.SquareEntity;
@@ -14,7 +15,7 @@ import com.project.fumanji.persistence.SquareEntity;
 @Entity
 public class PortalSquareEntity extends SquareEntity {
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "portal_square_link", joinColumns = @JoinColumn(name = "square_id"))
     @Column(name = "linked_position")
     private List<Integer> linkedPositions = new ArrayList<>();

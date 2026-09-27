@@ -10,18 +10,19 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
 public class BivioSquareEntity extends SquareEntity {
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "bivio_square_next", joinColumns = @JoinColumn(name = "square_id"))
     @Column(name = "next_position")
     private List<Integer> nextPositions = new ArrayList<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "bivio_square_previous", joinColumns = @JoinColumn(name = "square_id"))
     @Column(name = "previous_position")
     private List<Integer> previousPositions = new ArrayList<>();
