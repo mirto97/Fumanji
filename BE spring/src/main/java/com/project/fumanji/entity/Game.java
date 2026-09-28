@@ -23,6 +23,7 @@ public class Game {
     private final List<Integer> movementTrace = new ArrayList<>();
     private final Set<Integer> activatedPositions = new HashSet<>();
     private boolean chainInProgress;
+    private TurnPhase turnPhase = TurnPhase.WAITING_ROLL;   // dice in quale fase del turno stiamo
  
     public Game(Board board, List<Player> players, Dice dice) {
         if (board == null) {
@@ -57,6 +58,55 @@ public class Game {
             currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         }
     }
+
+    // TODO commentare e studiareeeeee
+    
+    // synchronized: l'ho messo sui tre metodi di turno perché senza, un doppio click che genera due richieste contemporanee passerebbe entrambi i controlli di fase
+
+    public synchronized int performRoll() {
+        checkTurnAction(TurnPhase.WAITING_ROLL);
+        int rollValue = roll(getCurrentPlayer());
+        turnPhase = TurnPhase.WAITING_DIRECTION;
+        return rollValue;
+    }
+
+    public synchronized void performMove(boolean forward) {
+        checkTurnAction(TurnPhase.WAITING_DIRECTION);
+        moveByChosenDirection(getCurrentPlayer(), forward);
+        resolveTurnPhase();
+    }
+
+    public synchronized void performChoice(int chosenPosition) {
+        checkTurnAction(TurnPhase.WAITING_CHOICE);
+        chooseDestination(getCurrentPlayer(), chosenPosition);
+        resolveTurnPhase();
+    }
+
+    private void checkTurnAction(TurnPhase expectedPhase) {
+        if (winner != null) {
+            throw new IllegalStateException("Game is already over");
+        }
+        if (turnPhase != expectedPhase) {
+            throw new IllegalStateException(
+                    "Action not allowed in phase " + turnPhase + " (expected " + expectedPhase + ")");
+        }
+    }
+
+    private void resolveTurnPhase() {
+        if (winner != null) {
+            return;
+        }
+        if (isAwaitingChoice()) {
+            turnPhase = TurnPhase.WAITING_CHOICE;
+            return;
+        }
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        turnPhase = TurnPhase.WAITING_ROLL;
+    }
+
+
+
+
  
     /**
      * metodo per tirare il dado e controllare il valore
@@ -412,6 +462,14 @@ public class Game {
     }
     
     // getter
+
+    public Player getCurrentPlayer() {
+        return players.get(currentPlayerIndex);
+    }
+
+    public TurnPhase getTurnPhase() {
+        return turnPhase;
+    }
 
     public List<Integer> getMovementTrace() {
         return List.copyOf(movementTrace);
