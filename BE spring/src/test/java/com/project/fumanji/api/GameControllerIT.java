@@ -34,7 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.project.fumanji.entity.Board;
 import com.project.fumanji.entity.ControllableDice;
-import com.project.fumanji.entity.Dice;
 import com.project.fumanji.entity.Game;
 import com.project.fumanji.entity.Player;
 import com.project.fumanji.entity.Square;
