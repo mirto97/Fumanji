@@ -17,5 +17,9 @@ public class SnackSquare extends Square {
     public void applyEffect(Player player, Game game) {
         game.addSnack(player, amount);
     }
+
+    public int getAmount() {
+        return amount;
+    }
     
 }

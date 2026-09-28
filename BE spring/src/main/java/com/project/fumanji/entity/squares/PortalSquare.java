@@ -25,4 +25,8 @@ public class PortalSquare extends Square implements InteractiveSquare {
             game.teleportTo(player, linkedPositions.get(0));
         }
     }
+
+    public List<Integer> getLinkedPositions() {
+        return linkedPositions;
+    }
 }

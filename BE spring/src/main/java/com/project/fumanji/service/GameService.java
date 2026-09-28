@@ -32,12 +32,14 @@ public class GameService {
     private final BoardAssembler boardAssembler;
     private final GameRegistry gameRegistry;
     private final EndGameService endGameService;
+    private final Dice dice;
 
-    public GameService(BoardRepository boardRepository, BoardAssembler boardAssembler, GameRegistry gameRegistry, EndGameService endGameService) {
+    public GameService(BoardRepository boardRepository, BoardAssembler boardAssembler, GameRegistry gameRegistry, EndGameService endGameService, Dice dice) {
         this.boardRepository = boardRepository;
         this.boardAssembler = boardAssembler;
         this.gameRegistry = gameRegistry;
         this.endGameService = endGameService;
+        this.dice = dice;
     }
 
     public GameCreationResult createGame(List<String> playerNames) {
@@ -49,7 +51,7 @@ public class GameService {
             players.add(new Player(name));
         }
 
-        Game game = new Game(board, players, new Dice());
+        Game game = new Game(board, players, dice);
         UUID gameId = gameRegistry.register(game);
         return new GameCreationResult(gameId, players.get(0).getName());
     }
