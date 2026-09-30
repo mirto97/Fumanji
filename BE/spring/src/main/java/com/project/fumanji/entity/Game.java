@@ -24,7 +24,8 @@ public class Game {
     private final Set<Integer> activatedPositions = new HashSet<>();
     private boolean chainInProgress;
     private TurnPhase turnPhase = TurnPhase.WAITING_ROLL;   // dice in quale fase del turno stiamo
- 
+    private final List<String> turnMessages = new ArrayList<>();
+
     public Game(Board board, List<Player> players, Dice dice) {
         if (board == null) {
             throw new IllegalArgumentException("Board must not be null");
@@ -65,6 +66,7 @@ public class Game {
 
     public synchronized int performRoll() {
         checkTurnAction(TurnPhase.WAITING_ROLL);
+        turnMessages.clear();
         int rollValue = roll(getCurrentPlayer());
         turnPhase = TurnPhase.WAITING_DIRECTION;
         return rollValue;
@@ -462,6 +464,14 @@ public class Game {
     }
     
     // getter
+
+    public synchronized void addMessage(String message) {
+        turnMessages.add(message);
+    }
+
+    public synchronized List<String> getTurnMessages() {
+        return List.copyOf(turnMessages);
+    }
 
     public Player getCurrentPlayer() {
         return players.get(currentPlayerIndex);

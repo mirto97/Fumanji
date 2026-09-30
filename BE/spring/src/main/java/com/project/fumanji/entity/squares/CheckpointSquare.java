@@ -13,7 +13,7 @@ public class CheckpointSquare extends Square {
     @Override
     public void applyEffect(Player player, Game game) {
         game.updateCheckpoint(player);
-        System.out.println(buildMessage(player));
+        game.addMessage(buildMessage(player));
     }
 
     public String buildMessage(Player player) {

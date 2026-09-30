@@ -22,4 +22,16 @@ export class GameApi {
   getGame(gameId: string): Observable<GameStateResponse> {
     return this.http.get<GameStateResponse>(`${this.baseUrl}/${gameId}`);
   }
+
+  roll(gameId: string): Observable<GameStateResponse> {
+    return this.http.post<GameStateResponse>(`${this.baseUrl}/${gameId}/roll`, null);
+  }
+
+  move(gameId: string, forward: boolean): Observable<GameStateResponse> {
+    return this.http.post<GameStateResponse>(`${this.baseUrl}/${gameId}/move`, { forward });
+  }
+
+  choose(gameId: string, position: number): Observable<GameStateResponse> {
+    return this.http.post<GameStateResponse>(`${this.baseUrl}/${gameId}/choice`, { position });
+  }
 }

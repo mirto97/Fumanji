@@ -15,7 +15,7 @@ public class ObligationSquare extends Square {
 
     @Override
     public void applyEffect(Player player, Game game) {
-        System.out.println(buildMessage(player, game));
+        game.addMessage(buildMessage(player, game));
     }
 
     /**

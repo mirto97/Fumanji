@@ -445,4 +445,41 @@ class GameControllerIT {
         DrinkSquare drink = (DrinkSquare) squares.get(position);
         assertThat(drink.getAmount()).as("drink amount at %d", position).isEqualTo(expectedAmount);
     }
+
+    @Test
+    void returnsObligationMessageWhenLandingOnObligationSquare() throws Exception {
+        String gameId = createGame();
+        dice.setNextRoll(1);
+
+        mockMvc.perform(post("/api/games/{gameId}/roll", gameId))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/games/{gameId}/move", gameId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"forward": true}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.messages", hasSize(1)))
+                .andExpect(jsonPath("$.messages[0]", is("Mario deve dare un obbligo a qualcuno")));
+    }
+
+    @Test
+    void clearsMessagesOnNextRoll() throws Exception {
+        String gameId = createGame();
+        dice.setNextRoll(1);
+
+        mockMvc.perform(post("/api/games/{gameId}/roll", gameId))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/games/{gameId}/move", gameId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"forward": true}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.messages", hasSize(1)));
+
+        mockMvc.perform(post("/api/games/{gameId}/roll", gameId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.messages").doesNotExist());
+    }
 }

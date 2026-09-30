@@ -9,6 +9,7 @@ public record GameStateResponse(String currentPlayerName,
         int lastRoll,
         List<PlayerStateResponse> players,
         List<Integer> choiceOptions,
-        String winnerName) {
+        String winnerName,
+        List<String> messages) {
     
 }
