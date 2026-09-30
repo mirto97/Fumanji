@@ -1,0 +1,37 @@
+<div class="game-screen">
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  @let game = state();
+  @if (game) {
+    <h2>Turno di {{ game.currentPlayerName }}</h2>
+    <p>Fase: {{ game.turnPhase }}</p>
+    @if (game.lastRoll > 0) {
+      <p>Ultimo tiro: {{ game.lastRoll }}</p>
+    }
+
+    <table>
+      <thead>
+        <tr>
+          <th>Giocatore</th>
+          <th>Posizione</th>
+          <th>Snack</th>
+          <th>Drink</th>
+          <th>Checkpoint</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (player of game.players; track $index) {
+          <tr>
+            <td>{{ player.name }}</td>
+            <td>{{ player.position }}</td>
+            <td>{{ player.snack }}</td>
+            <td>{{ player.drink }}</td>
+            <td>{{ player.checkpoint }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

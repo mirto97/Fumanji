@@ -1,0 +1,20 @@
+.player-setup {
+  max-width: 400px;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.player-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.player-row input {
+  flex: 1;
+}
+
+.error {
+  color: red;
+}
