@@ -1,14 +1,17 @@
 package com.project.fumanji.service;
 
+import org.springframework.stereotype.Service;
+
 import com.project.fumanji.entity.Board;
 import com.project.fumanji.exception.BoardNotFoundException;
 import com.project.fumanji.persistence.BoardAssembler;
 import com.project.fumanji.persistence.BoardEntity;
 import com.project.fumanji.repository.BoardRepository;
 
+@Service 
 public class BoardService {
     
-        private final BoardRepository boardRepository;
+    private final BoardRepository boardRepository;
     private final BoardAssembler boardAssembler;
 
     public BoardService(BoardRepository boardRepository, BoardAssembler boardAssembler) {
