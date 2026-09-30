@@ -17,4 +17,9 @@ public class MoveForwardSquare extends Square {
     public void applyEffect(Player player, Game game) {
         game.moveForwardBy(player, steps);
     }
+
+    @Override
+    public String getDescription() {
+        return "Avanti di " + steps + " caselle";
+    }
 }

@@ -6,6 +6,8 @@ import com.project.fumanji.entity.Square;
 
 public class CheckpointSquare extends Square {
 
+    private static final String MESSAGE_TEMPLATE = "{player} ha raggiunto il checkpoint! Quindi deve fare 3 tiri di creazione";
+
     public CheckpointSquare(int position) {
         super(position);
     }
@@ -16,11 +18,6 @@ public class CheckpointSquare extends Square {
         game.addMessage(buildMessage(player));
     }
 
-    public String buildMessage(Player player) {
-        // mockup
-        return player.getName() + " ha raggiunto il checkpoint! Quindi deve fare 3 tiri di creazione";
-    }
-
     /**    (non-Javadoc)
      * mi sa che per adesso ho messo che la regola di fermarsi al check è sempre attiva TODO vedremo
      * @see entity.Square#isMandatoryStop()
@@ -28,5 +25,14 @@ public class CheckpointSquare extends Square {
     @Override
     public boolean isMandatoryStop() {
         return true;
+    }
+
+    public String buildMessage(Player player) {
+        return MESSAGE_TEMPLATE.replace("{player}", player.getName());
+    }
+
+    @Override
+    public String getDescription() {
+        return MESSAGE_TEMPLATE;
     }
 }

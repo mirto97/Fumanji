@@ -29,4 +29,9 @@ public class ObligationSquare extends Square {
     public String buildMessage(Player player, Game game) {
         return message.replace("{player}", player.getName());
     }
+
+    @Override
+    public String getDescription() {
+        return message;
+    }
 }

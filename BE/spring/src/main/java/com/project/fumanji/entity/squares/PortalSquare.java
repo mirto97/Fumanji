@@ -29,4 +29,9 @@ public class PortalSquare extends Square implements InteractiveSquare {
     public List<Integer> getLinkedPositions() {
         return linkedPositions;
     }
+
+    @Override
+    public String getDescription() {
+        return "Portale: ti teletrasporta a un altro portale";
+    }
 }

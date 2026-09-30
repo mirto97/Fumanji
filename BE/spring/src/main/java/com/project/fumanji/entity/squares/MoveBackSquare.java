@@ -17,4 +17,9 @@ public class MoveBackSquare extends Square {
     public void applyEffect(Player player, Game game) {
         game.moveBackwardBy(player, steps);
     }
+
+    @Override
+    public String getDescription() {
+        return "Indietro di " + steps + " caselle";
+    }
 }

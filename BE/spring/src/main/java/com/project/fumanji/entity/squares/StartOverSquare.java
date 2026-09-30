@@ -15,4 +15,9 @@ public class StartOverSquare extends Square {
         game.resetToStart(player);
         game.landOnCurrentSquare(player);  
     }
+
+    @Override
+    public String getDescription() {
+        return "Torna all'ultimo checkpoint (o alla partenza)";
+    }
 }

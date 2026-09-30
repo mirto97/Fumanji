@@ -21,4 +21,10 @@ public class DrinkSquare extends Square {
     public int getAmount() {
         return amount;
     }
+
+    @Override
+    public String getDescription() {
+        // alternativa: String.format("%+d snack", amount), che sceglie il segno da solo
+        return (amount<0 ? amount : "+"+amount) + " drink";
+    }
 }

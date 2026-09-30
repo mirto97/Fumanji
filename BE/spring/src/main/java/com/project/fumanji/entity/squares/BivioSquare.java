@@ -29,6 +29,11 @@ public class BivioSquare extends Square implements InteractiveSquare {
     }
 
     @Override
+    public String getDescription() {
+        return effect != null ? effect.getDescription() : null;
+    }
+
+    @Override
     public List<Integer> getNextPositions() { return nextPositions; }
 
     @Override

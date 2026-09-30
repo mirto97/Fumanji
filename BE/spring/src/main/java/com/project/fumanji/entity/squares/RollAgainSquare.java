@@ -14,4 +14,9 @@ public class RollAgainSquare extends Square {
     public void applyEffect(Player player, Game game) {
         game.rollAndMove(player);
     }
+
+    @Override
+    public String getDescription() {
+        return "Tira di nuovo";
+    }
 }
