@@ -17,4 +17,8 @@ public class DrinkSquare extends Square {
     public void applyEffect(Player player, Game game) {
         game.addDrink(player, amount);
     }
+
+    public int getAmount() {
+        return amount;
+    }
 }
