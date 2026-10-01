@@ -1,0 +1,6 @@
+:host {
+  /* La pedina scivola in linea retta quando cambia posizione */
+  transition: transform 0.4s ease-in-out;
+  /* Non intercetta i click: restano sulla casella sotto */
+  pointer-events: none;
+}

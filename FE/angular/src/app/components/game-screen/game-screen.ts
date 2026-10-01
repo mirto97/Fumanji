@@ -5,10 +5,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { GameStateResponse } from '../../models/game-state-response';
 import { GameApi } from '../../services/game-api';
 import { Observable } from 'rxjs';
+import { Board } from '../../board/board';
 
 @Component({
   selector: 'app-game-screen',
-  imports: [],
+  imports: [Board],
   templateUrl: './game-screen.html',
   styleUrl: './game-screen.css',
 })

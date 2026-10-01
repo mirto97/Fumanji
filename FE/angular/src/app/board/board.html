@@ -1,0 +1,46 @@
+<div class="board">
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  <svg class="board-svg" [attr.viewBox]="viewBox">
+    @for (placed of placedSquares(); track placed.square.position) {
+      <g
+        class="square"
+        [class.selected]="placed.square.position === selectedPosition()"
+        (click)="select(placed.square.position)"
+      >
+        <rect [attr.x]="placed.x" [attr.y]="placed.y" [attr.width]="cellSize" [attr.height]="cellSize" />
+        @for (line of placed.lines; track $index) {
+        <text
+            [attr.x]="placed.x + cellSize / 2"
+            [attr.y]="line.y"
+            text-anchor="middle"
+            dominant-baseline="central"
+        >{{ line.text }}</text>
+        }
+      </g>
+    }
+    @for (pawn of pawns(); track pawn.index) {
+			<g
+				appPawn
+				[x]="pawn.x"
+				[y]="pawn.y"
+				[radius]="pawn.radius"
+				[color]="pawn.color"
+				[initial]="pawn.initial"
+			></g>
+    }
+  </svg>
+
+  @let selected = selectedSquare();
+  @if (selected) {
+    <div class="square-detail">
+      <h3>Casella {{ selected.position }}</h3>
+      <p>Tipo: {{ selected.type }}</p>
+      @if (selected.description) {
+        <p>{{ selected.description }}</p>
+      }
+    </div>
+  }
+</div>
