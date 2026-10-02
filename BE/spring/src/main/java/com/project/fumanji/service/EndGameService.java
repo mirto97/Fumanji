@@ -3,9 +3,9 @@ package com.project.fumanji.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.project.fumanji.entity.Game;
-import com.project.fumanji.persistence.BoardEntity;
-import com.project.fumanji.persistence.EndGameEntity;
+import com.project.fumanji.entity.BoardEntity;
+import com.project.fumanji.entity.EndGameEntity;
+import com.project.fumanji.model.Game;
 import com.project.fumanji.repository.BoardRepository;
 import com.project.fumanji.repository.EndGameRepository;
 

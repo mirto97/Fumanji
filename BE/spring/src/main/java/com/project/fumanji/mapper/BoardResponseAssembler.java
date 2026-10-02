@@ -8,18 +8,18 @@ import org.springframework.stereotype.Component;
 import com.project.fumanji.dto.BoardResponse;
 import com.project.fumanji.dto.SquareResponse;
 import com.project.fumanji.dto.SquareType;
-import com.project.fumanji.entity.Board;
-import com.project.fumanji.entity.Square;
-import com.project.fumanji.entity.squares.BivioSquare;
-import com.project.fumanji.entity.squares.CheckpointSquare;
-import com.project.fumanji.entity.squares.DrinkSquare;
-import com.project.fumanji.entity.squares.MoveBackSquare;
-import com.project.fumanji.entity.squares.MoveForwardSquare;
-import com.project.fumanji.entity.squares.ObligationSquare;
-import com.project.fumanji.entity.squares.PortalSquare;
-import com.project.fumanji.entity.squares.RollAgainSquare;
-import com.project.fumanji.entity.squares.SnackSquare;
-import com.project.fumanji.entity.squares.StartOverSquare;
+import com.project.fumanji.model.Board;
+import com.project.fumanji.model.Square;
+import com.project.fumanji.model.squares.BivioSquare;
+import com.project.fumanji.model.squares.CheckpointSquare;
+import com.project.fumanji.model.squares.DrinkSquare;
+import com.project.fumanji.model.squares.MoveBackSquare;
+import com.project.fumanji.model.squares.MoveForwardSquare;
+import com.project.fumanji.model.squares.ObligationSquare;
+import com.project.fumanji.model.squares.PortalSquare;
+import com.project.fumanji.model.squares.RollAgainSquare;
+import com.project.fumanji.model.squares.SnackSquare;
+import com.project.fumanji.model.squares.StartOverSquare;
 
 @Component
 public class BoardResponseAssembler {

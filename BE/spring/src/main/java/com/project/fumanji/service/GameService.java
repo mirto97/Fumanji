@@ -6,13 +6,13 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.project.fumanji.entity.Board;
-import com.project.fumanji.entity.Dice;
-import com.project.fumanji.entity.Game;
-import com.project.fumanji.entity.Player;
+import com.project.fumanji.entity.BoardAssembler;
+import com.project.fumanji.entity.BoardEntity;
 import com.project.fumanji.exception.GameNotFoundException;
-import com.project.fumanji.persistence.BoardAssembler;
-import com.project.fumanji.persistence.BoardEntity;
+import com.project.fumanji.model.Board;
+import com.project.fumanji.model.Dice;
+import com.project.fumanji.model.Game;
+import com.project.fumanji.model.Player;
 import com.project.fumanji.repository.BoardRepository;
 
 /**

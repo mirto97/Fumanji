@@ -2,7 +2,7 @@ package com.project.fumanji.dto;
 
 import java.util.List;
 
-import com.project.fumanji.entity.TurnPhase;
+import com.project.fumanji.model.TurnPhase;
 
 public record GameStateResponse(String currentPlayerName,
         TurnPhase turnPhase,

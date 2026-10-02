@@ -15,8 +15,8 @@ import com.project.fumanji.dto.CreateGameRequest;
 import com.project.fumanji.dto.CreateGameResponse;
 import com.project.fumanji.dto.GameStateResponse;
 import com.project.fumanji.dto.MoveRequest;
-import com.project.fumanji.entity.Game;
 import com.project.fumanji.mapper.GameStateAssembler;
+import com.project.fumanji.model.Game;
 import com.project.fumanji.service.GameCreationResult;
 import com.project.fumanji.service.GameService;
 

@@ -32,20 +32,20 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.util.JsonPathExpectationsHelper;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.project.fumanji.entity.Board;
+import com.project.fumanji.entity.BoardAssembler;
+import com.project.fumanji.entity.BoardEntity;
 import com.project.fumanji.entity.ControllableDice;
-import com.project.fumanji.entity.Game;
-import com.project.fumanji.entity.Player;
-import com.project.fumanji.entity.Square;
-import com.project.fumanji.entity.squares.BivioSquare;
-import com.project.fumanji.entity.squares.CheckpointSquare;
-import com.project.fumanji.entity.squares.DrinkSquare;
-import com.project.fumanji.entity.squares.ObligationSquare;
-import com.project.fumanji.entity.squares.PortalSquare;
-import com.project.fumanji.entity.squares.SnackSquare;
-import com.project.fumanji.entity.squares.StartOverSquare;
-import com.project.fumanji.persistence.BoardAssembler;
-import com.project.fumanji.persistence.BoardEntity;
+import com.project.fumanji.model.Board;
+import com.project.fumanji.model.Game;
+import com.project.fumanji.model.Player;
+import com.project.fumanji.model.Square;
+import com.project.fumanji.model.squares.BivioSquare;
+import com.project.fumanji.model.squares.CheckpointSquare;
+import com.project.fumanji.model.squares.DrinkSquare;
+import com.project.fumanji.model.squares.ObligationSquare;
+import com.project.fumanji.model.squares.PortalSquare;
+import com.project.fumanji.model.squares.SnackSquare;
+import com.project.fumanji.model.squares.StartOverSquare;
 import com.project.fumanji.repository.BoardRepository;
 import com.project.fumanji.repository.EndGameRepository;
 import com.project.fumanji.service.GameRegistry;
@@ -247,7 +247,7 @@ class GameControllerIT {
     @Test
     void choiceMovesPlayerAndContinuesRemainingSteps() throws Exception {
         String gameId = createGame();
-        dice.setNextRoll(7);
+        dice.setNextRoll(8);
 
         mockMvc.perform(post("/api/games/{gameId}/roll", gameId))
                 .andExpect(status().isOk());
@@ -276,7 +276,7 @@ class GameControllerIT {
     @Test
     void rejectsInvalidChoice() throws Exception {
         String gameId = createGame();
-        dice.setNextRoll(7);
+        dice.setNextRoll(8);
 
         mockMvc.perform(post("/api/games/{gameId}/roll", gameId))
                 .andExpect(status().isOk());
@@ -303,7 +303,7 @@ class GameControllerIT {
         List<Square> squares = board.getSquares();
 
         // caselle base: partenza, arrivo, i 6 gap "no smoke"
-        List<Integer> plainPositions = List.of(0, 5, 24, 54, 85, 97, 101, 110);
+        List<Integer> plainPositions = List.of(0, 6, 24, 54, 85, 97, 101, 110);
         for (int position : plainPositions) {
             assertThat(squares.get(position)).as("position %d", position).isExactlyInstanceOf(Square.class);
         }
@@ -312,10 +312,10 @@ class GameControllerIT {
         Map<Integer, Class<? extends Square>> expectedTypes = new HashMap<>();
         expectedTypes.put(1, ObligationSquare.class);
         expectedTypes.put(2, ObligationSquare.class);
-        expectedTypes.put(3, DrinkSquare.class);
-        expectedTypes.put(4, StartOverSquare.class);
-        expectedTypes.put(6, BivioSquare.class);
-        expectedTypes.put(10, ObligationSquare.class);
+        expectedTypes.put(3, ObligationSquare.class);
+        expectedTypes.put(4, DrinkSquare.class);
+        expectedTypes.put(5, StartOverSquare.class);
+        expectedTypes.put(7, BivioSquare.class);
         expectedTypes.put(11, ObligationSquare.class);
         expectedTypes.put(12, BivioSquare.class);
         expectedTypes.put(16, StartOverSquare.class);
@@ -351,7 +351,6 @@ class GameControllerIT {
         expectedTypes.put(71, SnackSquare.class);
         expectedTypes.put(72, StartOverSquare.class);
         expectedTypes.put(73, BivioSquare.class);
-        expectedTypes.put(80, BivioSquare.class);
         expectedTypes.put(81, CheckpointSquare.class);
         expectedTypes.put(82, ObligationSquare.class);
         expectedTypes.put(83, DrinkSquare.class);
@@ -382,17 +381,16 @@ class GameControllerIT {
         expectedTypes.forEach((position, type) ->
                 assertThat(squares.get(position)).as("position %d", position).isExactlyInstanceOf(type));
 
-        // next/previous dei 10 bivi
-        assertBivio(squares, 6, List.of(10, 40), List.of(5));
+        // next/previous dei 9 bivi
+        assertBivio(squares, 7, List.of(10, 40), List.of(6));
         assertBivio(squares, 12, List.of(16, 22), List.of(11));
         assertBivio(squares, 17, List.of(70), List.of(16));
-        assertBivio(squares, 33, List.of(80), List.of(32));
+        assertBivio(squares, 33, List.of(81), List.of(32));
         assertBivio(squares, 42, List.of(46, 52), List.of(41));
         assertBivio(squares, 47, List.of(70), List.of(46));
-        assertBivio(squares, 63, List.of(80), List.of(62));
+        assertBivio(squares, 63, List.of(81), List.of(62));
         assertBivio(squares, 70, List.of(71), List.of(17, 47));
-        assertBivio(squares, 73, List.of(80), List.of(72));
-        assertBivio(squares, 80, List.of(81), List.of(33, 63, 73));
+        assertBivio(squares, 73, List.of(81), List.of(72));
 
         // collegamenti dei 6 portali: ognuno verso le altre 5 posizioni
         assertPortalLinks(squares, 53, List.of(23, 32, 62, 27, 58));
@@ -410,7 +408,7 @@ class GameControllerIT {
         assertSnackAmount(squares, 95, 1);
         assertSnackAmount(squares, 102, 1);
 
-        assertDrinkAmount(squares, 3, 1);
+        assertDrinkAmount(squares, 4, 1);
         assertDrinkAmount(squares, 22, 1);
         assertDrinkAmount(squares, 31, 1);
         assertDrinkAmount(squares, 52, 1);
@@ -460,7 +458,7 @@ class GameControllerIT {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages", hasSize(1)))
-                .andExpect(jsonPath("$.messages[0]", is("Mario deve dare un obbligo a qualcuno")));
+                .andExpect(jsonPath("$.messages[0]", is("Mario deve fare 2 tiri")));    
     }
 
     @Test

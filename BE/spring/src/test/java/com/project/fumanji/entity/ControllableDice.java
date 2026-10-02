@@ -1,5 +1,7 @@
 package com.project.fumanji.entity;
 
+import com.project.fumanji.model.Dice;
+
 /**
  * Dado di test: valore del prossimo tiro impostabile a piacere,
  * per coprire nei test scenari che dipendono dal risultato del dado.

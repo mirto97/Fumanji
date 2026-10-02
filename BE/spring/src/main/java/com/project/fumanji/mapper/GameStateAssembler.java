@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.project.fumanji.dto.GameStateResponse;
 import com.project.fumanji.dto.PlayerStateResponse;
-import com.project.fumanji.entity.Game;
+import com.project.fumanji.model.Game;
 
 @Component
 public class GameStateAssembler {

@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 
-import com.project.fumanji.entity.Game;
+import com.project.fumanji.model.Game;
 
 /**
  * Registro in-memory delle partite in corso: nessuna persistenza per mossa,

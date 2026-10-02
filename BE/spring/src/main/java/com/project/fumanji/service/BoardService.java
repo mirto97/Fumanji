@@ -2,10 +2,10 @@ package com.project.fumanji.service;
 
 import org.springframework.stereotype.Service;
 
-import com.project.fumanji.entity.Board;
+import com.project.fumanji.entity.BoardAssembler;
+import com.project.fumanji.entity.BoardEntity;
 import com.project.fumanji.exception.BoardNotFoundException;
-import com.project.fumanji.persistence.BoardAssembler;
-import com.project.fumanji.persistence.BoardEntity;
+import com.project.fumanji.model.Board;
 import com.project.fumanji.repository.BoardRepository;
 
 @Service 

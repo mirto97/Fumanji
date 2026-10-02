@@ -10,4 +10,5 @@ public class FumanjiApplication {
 		SpringApplication.run(FumanjiApplication.class, args);
 	}
 
+    
 }
