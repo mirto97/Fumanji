@@ -1,0 +1,72 @@
+<div class="game-screen">
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  @let game = state();
+  @if (game) {
+    <h2>Turno di {{ game.currentPlayerName }}</h2>
+    <p>Fase: {{ game.turnPhase }}</p>
+    @if (game.lastRoll > 0) {
+      <p>Ultimo tiro: {{ game.lastRoll }}</p>
+    }
+
+    <div class="actions">
+      @switch (game.turnPhase) {
+        @case ('WAITING_ROLL') {
+          <button type="button" (click)="roll()" [disabled]="isBusy()">Tira il dado</button>
+        }
+        @case ('WAITING_DIRECTION') {
+          <button type="button" (click)="move(true)" [disabled]="isBusy()">Avanti</button>
+          <button type="button" (click)="move(false)" [disabled]="isBusy()">Indietro</button>
+        }
+        @case ('WAITING_CHOICE') {
+          @for (option of game.choiceOptions ?? []; track option) {
+            <button type="button" (click)="choose(option)" [disabled]="isBusy()">
+              Vai alla casella {{ option }}
+            </button>
+          }
+        }
+      }
+    </div>
+
+    @if (game.messages; as messages) {
+      <div class="messages">
+        @for (message of messages; track $index) {
+          <p>{{ message }}</p>
+        }
+      </div>
+    }
+
+    @if (pauseMessage(); as message) {
+      <div class="messages">
+        <p>{{ message }}</p>
+        <button type="button" (click)="continueReplay()">Continua</button>
+      </div>
+    }
+
+    <table>
+      <thead>
+        <tr>
+          <th>Giocatore</th>
+          <th>Posizione</th>
+          <th>Snack</th>
+          <th>Drink</th>
+          <th>Checkpoint</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (player of game.players; track $index) {
+          <tr>
+            <td>{{ player.name }}</td>
+            <td>{{ player.position }}</td>
+            <td>{{ player.snack }}</td>
+            <td>{{ player.drink }}</td>
+            <td>{{ player.checkpoint }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+  <app-board [players]="boardPlayers()" />
+</div>

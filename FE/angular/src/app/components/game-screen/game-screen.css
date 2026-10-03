@@ -1,0 +1,32 @@
+.game-screen {
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+.error {
+  color: red;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.messages {
+  border: 1px solid #ccc;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+}

@@ -1,0 +1,8 @@
+<div class="winner">
+  @if (winnerName) {
+    <h1>Ha vinto {{ winnerName }}!</h1>
+  } @else {
+    <p>Nessun vincitore da mostrare.</p>
+  }
+  <a routerLink="/players">Nuova partita</a>
+</div>

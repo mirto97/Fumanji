@@ -1,0 +1,60 @@
+.board-scroll {
+  overflow-x: auto;
+}
+
+.board-svg {
+  display: block;
+  border: 1px solid #ccc;
+}
+
+.square rect,
+.square circle {
+  fill: #fff;
+  stroke: #333;
+  stroke-width: 2;
+}
+
+.square.selected rect,
+.square.selected circle {
+  fill: #ffe9a8;
+}
+
+/* forse è tutto da cancellare questo sotto */
+
+.board-svg {
+  width: 100%;
+  max-width: 600px;
+  border: 1px solid #ccc;
+}
+
+.square {
+  cursor: pointer;
+}
+
+.square rect {
+  fill: #fff;
+  stroke: #333;
+  stroke-width: 2;
+}
+
+.square.selected rect {
+  fill: #ffe9a8;
+}
+
+.square text {
+  font-size: 10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.square-detail {
+  border: 1px solid #ccc;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+}
+
+.error {
+  color: red;
+}
+
+

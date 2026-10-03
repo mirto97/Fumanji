@@ -1,0 +1,23 @@
+<div class="player-setup">
+  <h2>Chi gioca?</h2>
+  <p>Inserisci i nomi nell'ordine di gioco</p>
+
+  @for (name of names(); track $index) {
+    <div class="player-row">
+      <input
+        #nameInput
+        type="text"
+        [value]="name"
+        [placeholder]="'Giocatore ' + ($index + 1)"
+        (input)="updateName($index, nameInput.value)"
+      />
+      <button type="button" (click)="removePlayer($index)" [disabled]="!canRemove()">Rimuovi</button>
+    </div>
+  }
+
+  <button type="button" (click)="addPlayer()" [disabled]="!canAdd()">Aggiungi giocatore</button>
+	@if (errorMessage()) {
+		<p class="error">{{ errorMessage() }}</p>
+	}
+  <button type="button" (click)="submit()" [disabled]="!canSubmit()">Inizia</button>
+</div>
