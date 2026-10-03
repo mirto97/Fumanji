@@ -6,7 +6,7 @@ import { BoardApi } from '../services/board-api';
 import { BOARD_COLUMNS, BOARD_LAYOUT, BOARD_ROWS, CELL_SIZE, DEFAULT_FOOTPRINT, SQUARE_FOOTPRINTS, SquareShape, } from './board-layout';
 import { SQUARE_LABELS } from './board-labels';
 import { PlayerStateResponse } from '../models/player-state-response';
-import { Pawn } from '../pawn/pawn';
+import { Pawn } from '../components/pawn/pawn';
 
 
 // TODO commentare e studiare tipo peffoooooooooooooo
@@ -82,7 +82,7 @@ export class Board implements OnInit {
   // Posizione della casella cliccata, di cui si mostra il dettaglio
   readonly selectedPosition = signal<number | null>(null);
 
-	  // Si disegnano solo le caselle che hanno già una coordinata: il tabellone si completa per pezzi
+  // Si disegnano solo le caselle che hanno già una coordinata: il tabellone si completa per pezzi
   readonly placedSquares = computed<PlacedSquare[]>(() =>
     (this.board()?.squares ?? []).flatMap(square => {
       const cell = BOARD_LAYOUT.get(square.position);

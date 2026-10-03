@@ -1,0 +1,1 @@
+export type MovementType = 'STEP' | 'JUMP' | 'RESET';

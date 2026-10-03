@@ -38,6 +38,13 @@
       </div>
     }
 
+    @if (pauseMessage(); as message) {
+      <div class="messages">
+        <p>{{ message }}</p>
+        <button type="button" (click)="continueReplay()">Continua</button>
+      </div>
+    }
+
     <table>
       <thead>
         <tr>
@@ -61,5 +68,5 @@
       </tbody>
     </table>
   }
-  <app-board [players]="game?.players ?? []" />
+  <app-board [players]="boardPlayers()" />
 </div>

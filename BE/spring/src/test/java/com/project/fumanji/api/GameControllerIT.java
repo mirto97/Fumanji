@@ -31,6 +31,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.util.JsonPathExpectationsHelper;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import com.project.fumanji.entity.BoardAssembler;
 import com.project.fumanji.entity.BoardEntity;
@@ -90,6 +91,58 @@ class GameControllerIT {
             return new ControllableDice();
         }
     }
+
+    // helper
+
+    private void assertBivio(List<Square> squares, int position, List<Integer> next, List<Integer> previous) {
+        Square square = squares.get(position);
+        assertThat(square).as("position %d", position).isExactlyInstanceOf(BivioSquare.class);
+        assertThat(square.getNextPositions()).as("next of %d", position).containsExactlyInAnyOrderElementsOf(next);
+        assertThat(square.getPreviousPositions()).as("previous of %d", position).containsExactlyInAnyOrderElementsOf(previous);
+    }
+
+    private void assertPortalLinks(List<Square> squares, int position, List<Integer> otherPortals) {
+        PortalSquare portal = (PortalSquare) squares.get(position);
+        assertThat(portal.getLinkedPositions()).as("portal %d links", position)
+                .containsExactlyInAnyOrderElementsOf(otherPortals);
+    }
+
+    private void assertSnackAmount(List<Square> squares, int position, int expectedAmount) {
+        SnackSquare snack = (SnackSquare) squares.get(position);
+        assertThat(snack.getAmount()).as("snack amount at %d", position).isEqualTo(expectedAmount);
+    }
+    
+    private void assertDrinkAmount(List<Square> squares, int position, int expectedAmount) {
+        DrinkSquare drink = (DrinkSquare) squares.get(position);
+        assertThat(drink.getAmount()).as("drink amount at %d", position).isEqualTo(expectedAmount);
+    }
+    
+    private UUID registerGame(Board board) {
+        return gameRegistry.register(new Game(board, List.of(new Player("Mario")), dice));
+    }
+
+    private Board boardWithCheckpointAt3() {
+        return Board.builder(10)
+                .square(3, new CheckpointSquare(3, List.of()))
+                .directionChoiceEnabled(true)
+                .mandatoryCheckpointEnabled(true)
+                .backwardAllowedAfterCheckpoint(false)
+                .build();
+    }
+
+    private void roll(UUID gameId) throws Exception {
+        mockMvc.perform(post("/api/games/{gameId}/roll", gameId)).andExpect(status().isOk());
+    }
+
+    private ResultActions move(UUID gameId, boolean forward) throws Exception {
+        return mockMvc.perform(post("/api/games/{gameId}/move", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"forward\": " + forward + "}"));
+    }
+
+
+
+    // test
 
     @Test
     void returnsCurrentStateOfExistingGame() throws Exception {
@@ -419,31 +472,6 @@ class GameControllerIT {
         assertDrinkAmount(squares, 104, 2);
     }
 
-    // helper
-
-    private void assertBivio(List<Square> squares, int position, List<Integer> next, List<Integer> previous) {
-        Square square = squares.get(position);
-        assertThat(square).as("position %d", position).isExactlyInstanceOf(BivioSquare.class);
-        assertThat(square.getNextPositions()).as("next of %d", position).containsExactlyInAnyOrderElementsOf(next);
-        assertThat(square.getPreviousPositions()).as("previous of %d", position).containsExactlyInAnyOrderElementsOf(previous);
-    }
-
-    private void assertPortalLinks(List<Square> squares, int position, List<Integer> otherPortals) {
-        PortalSquare portal = (PortalSquare) squares.get(position);
-        assertThat(portal.getLinkedPositions()).as("portal %d links", position)
-                .containsExactlyInAnyOrderElementsOf(otherPortals);
-    }
-
-    private void assertSnackAmount(List<Square> squares, int position, int expectedAmount) {
-        SnackSquare snack = (SnackSquare) squares.get(position);
-        assertThat(snack.getAmount()).as("snack amount at %d", position).isEqualTo(expectedAmount);
-    }
-
-    private void assertDrinkAmount(List<Square> squares, int position, int expectedAmount) {
-        DrinkSquare drink = (DrinkSquare) squares.get(position);
-        assertThat(drink.getAmount()).as("drink amount at %d", position).isEqualTo(expectedAmount);
-    }
-
     @Test
     void returnsObligationMessageWhenLandingOnObligationSquare() throws Exception {
         String gameId = createGame();
@@ -479,5 +507,101 @@ class GameControllerIT {
         mockMvc.perform(post("/api/games/{gameId}/roll", gameId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages").doesNotExist());
+    }
+
+    @Test
+    void wastesTurnWhenChoosingBackwardOnCheckpoint() throws Exception {
+        UUID gameId = registerGame(boardWithCheckpointAt3());
+        dice.setNextRoll(3);
+
+        roll(gameId);
+        move(gameId, true).andExpect(status().isOk());
+
+        roll(gameId);
+        move(gameId, false)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.players[0].position", is(3)))
+                .andExpect(jsonPath("$.messages", hasSize(1)))
+                .andExpect(jsonPath("$.messages[0]",
+                        is("Bravo Mario, hai sprecato un turno: non puoi andare indietro oltre il checkpoint")));
+    }
+
+    @Test
+    void wastesTurnWhenChoosingBackwardOnStart() throws Exception {
+        UUID gameId = registerGame(Board.builder(10).directionChoiceEnabled(true).build());
+        dice.setNextRoll(2);
+
+        roll(gameId);
+        move(gameId, false)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.players[0].position", is(0)))
+                .andExpect(jsonPath("$.messages", hasSize(1)))
+                .andExpect(jsonPath("$.messages[0]",
+                        is("Bravo Mario, hai sprecato un turno: non puoi andare indietro oltre la partenza")));
+    }
+
+    @Test
+    void warnsWhenBackwardMovementStopsAtCheckpointWithStepsLeft() throws Exception {
+        UUID gameId = registerGame(boardWithCheckpointAt3());
+        dice.setNextRoll(3);
+
+        roll(gameId);
+        move(gameId, true).andExpect(status().isOk());
+        roll(gameId);
+        move(gameId, true).andExpect(status().isOk());
+
+        dice.setNextRoll(5);
+        roll(gameId);
+        move(gameId, false)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.players[0].position", is(3)))
+                .andExpect(jsonPath("$.messages", hasSize(2)))
+                .andExpect(jsonPath("$.messages[0]",
+                        is("Mario non può andare indietro oltre il checkpoint: il movimento si ferma qui")));
+    }
+
+    @Test
+    void returnsWalkedStepsAsMovements() throws Exception {
+        String gameId = createGame();
+        dice.setNextRoll(2);
+
+        mockMvc.perform(post("/api/games/{gameId}/roll", gameId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.movements").doesNotExist());
+
+        mockMvc.perform(post("/api/games/{gameId}/move", gameId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"forward": true}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.movedPlayerIndex", is(0)))
+                .andExpect(jsonPath("$.movements", hasSize(2)))
+                .andExpect(jsonPath("$.movements[0].position", is(1)))
+                .andExpect(jsonPath("$.movements[0].type", is("STEP")))
+                .andExpect(jsonPath("$.movements[1].position", is(2)))
+                .andExpect(jsonPath("$.movements[1].type", is("STEP")));
+    }
+
+    @Test
+    void returnsResetMovementWithMessageOnStartOver() throws Exception {
+        String gameId = createGame();
+        dice.setNextRoll(5);
+
+        mockMvc.perform(post("/api/games/{gameId}/roll", gameId))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/games/{gameId}/move", gameId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"forward": true}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.movements", hasSize(6)))
+                .andExpect(jsonPath("$.movements[4].position", is(5)))
+                .andExpect(jsonPath("$.movements[5].position", is(0)))
+                .andExpect(jsonPath("$.movements[5].type", is("RESET")))
+                .andExpect(jsonPath("$.movements[5].message",
+                        is("Mario è finito su uno start over: torna all'ultimo checkpoint (o alla partenza)")))
+                .andExpect(jsonPath("$.players[0].position", is(0)));
     }
 }

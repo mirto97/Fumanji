@@ -7,6 +7,13 @@ import java.util.Set;
  
 public class Game {
 
+    private static final String WASTED_TURN_AT_CHECKPOINT =
+            "Bravo {player}, hai sprecato un turno: non puoi andare indietro oltre il checkpoint";
+    private static final String WASTED_TURN_AT_START =
+            "Bravo {player}, hai sprecato un turno: non puoi andare indietro oltre la partenza";
+    private static final String STOPPED_AT_CHECKPOINT =
+            "{player} non può andare indietro oltre il checkpoint: il movimento si ferma qui";
+
     private final Board board;
     private final List<Player> players;
     private final Dice dice;
@@ -20,7 +27,7 @@ public class Game {
     private boolean awaitingForward;
     private boolean awaitingRespectCheckpoint;
     private boolean awaitingContinueAfterChoice;
-    private final List<Integer> movementTrace = new ArrayList<>();
+    private final List<Movement> movementTrace = new ArrayList<>();
     private final Set<Integer> activatedPositions = new HashSet<>();
     private boolean chainInProgress;
     private TurnPhase turnPhase = TurnPhase.WAITING_ROLL;   // dice in quale fase del turno stiamo
@@ -67,6 +74,7 @@ public class Game {
     public synchronized int performRoll() {
         checkTurnAction(TurnPhase.WAITING_ROLL);
         turnMessages.clear();
+        movementTrace.clear();
         int rollValue = roll(getCurrentPlayer());
         turnPhase = TurnPhase.WAITING_DIRECTION;
         return rollValue;
@@ -80,6 +88,7 @@ public class Game {
 
     public synchronized void performChoice(int chosenPosition) {
         checkTurnAction(TurnPhase.WAITING_CHOICE);
+        movementTrace.clear();
         chooseDestination(getCurrentPlayer(), chosenPosition);
         resolveTurnPhase();
     }
@@ -140,6 +149,9 @@ public class Game {
         // se non specificato, va avanti
         if (forward || !board.isDirectionChoiceEnabled()) {
             moveForwardBy(player, lastRoll);
+        } else if (isBackwardBlocked(player)) {
+            String template = player.getPosition() <= 0 ? WASTED_TURN_AT_START : WASTED_TURN_AT_CHECKPOINT;
+            addMessage(template.replace("{player}", player.getName()));
         } else {
             moveBackwardBy(player, lastRoll);
         }
@@ -224,13 +236,8 @@ public class Game {
 
         // ciclo per muovere finchè rimangono steps
         while (remaining > 0) {
-            // pavimento fisso a 0, sempre attivo indipendentemente dalla regola del cp
-            if (player.getPosition() <= 0) {
-                break;
-            }
-            // se c'è la regola che non si può andare indietro oltre al cp
-            // e se il giocatore è oltre al cp, non può andare oltre
-            if (!board.isBackwardAllowedAfterCheckpoint() && player.getPosition() <= player.getCheckpoint()) {
+
+            if (isBackwardBlocked(player)) {
                 break;
             }
 
@@ -254,6 +261,9 @@ public class Game {
             Square nextSquare = board.getSquares().get(nextPosition);
             // se c'è la regola, azzera tutti gli steps rimanenti, costringendo il giocatore a fermarsi
             if (respectCheckpoint && nextSquare.isMandatoryStop()) {
+                if (remaining > 0) {
+                    addMessage(STOPPED_AT_CHECKPOINT.replace("{player}", player.getName()));
+                }
                 remaining = 0;
             }
         }
@@ -318,7 +328,7 @@ public class Game {
      * @param player
      * @param chosenPosition
     */
-   public void chooseDestination(Player player, int chosenPosition) {
+    public void chooseDestination(Player player, int chosenPosition) {
         // controlla che ci siano effettivamente le opzioni
         if (awaitingOptions == null) {
             throw new IllegalStateException("No choice is pending");
@@ -364,7 +374,7 @@ public class Game {
      * metodo che richiama il metodo sotto, e basta (sinceramente non ho capito perchè...)  
      * @param player
     */
-   public void landOnCurrentSquare(Player player) {
+    public void landOnCurrentSquare(Player player) {
        doLandOnCurrentSquare(player);
     }
     
@@ -417,15 +427,15 @@ public class Game {
      * @param position
     */
    public void teleportTo(Player player, int position) {
-       movePlayerTo(player, position);
+       movePlayerTo(player, position, MovementType.JUMP, null);
     }
     
     /**
      * metodo che riporta il giocatore all'ultimo cp raggiunto (oppure all'inizio)
      * @param player
      */
-    public void resetToStart(Player player) {
-        player.setPosition(player.getCheckpoint());
+    public void resetToStart(Player player, String message) {
+        movePlayerTo(player, player.getCheckpoint(), MovementType.RESET, message);
     }
     
     /**
@@ -442,8 +452,11 @@ public class Game {
      * @param position
      */
     private void movePlayerTo(Player player, int position) {
+        movePlayerTo(player, position, MovementType.STEP, null);
+    }
+    private void movePlayerTo(Player player, int position, MovementType type, String message) {
         player.setPosition(position);
-        movementTrace.add(position);
+        movementTrace.add(new Movement(position, type, message));
     }
     
     /**
@@ -451,6 +464,16 @@ public class Game {
      */
     public void clearMovementTrace() {
         movementTrace.clear();
+    }
+
+    private boolean isBackwardBlocked(Player player) {
+        // pavimento fisso a 0, sempre attivo indipendentemente dalla regola del cp
+        if (player.getPosition() <= 0) {
+            return true;
+        }
+        // se c'è la regola che non si può andare indietro oltre al cp
+        // e se il giocatore ha superato il cp, non può andare oltre
+        return !board.isBackwardAllowedAfterCheckpoint() && player.getPosition() <= player.getCheckpoint();
     }
 
     // helper
@@ -481,7 +504,7 @@ public class Game {
         return turnPhase;
     }
 
-    public List<Integer> getMovementTrace() {
+    public List<Movement> getMovementTrace() {
         return List.copyOf(movementTrace);
     }
     
