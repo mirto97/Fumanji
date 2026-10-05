@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { Welcome } from './components/welcome/welcome';
-import { PlayerSetup } from './components/player-setup/player-setup';
-import { GameScreen } from './components/game-screen/game-screen';
-import { Winner } from './components/winner/winner';
+import { Welcome } from './Components/welcome/welcome';
+import { PlayerSetup } from './Components/player-setup/player-setup';
+import { GameScreen } from './Components/game-screen/game-screen';
+import { Winner } from './Components/winner/winner';
 
 export const routes: Routes = [
     { path: '', component: Welcome },

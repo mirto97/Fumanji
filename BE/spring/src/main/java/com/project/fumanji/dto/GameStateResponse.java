@@ -10,6 +10,7 @@ public record GameStateResponse(
         int lastRoll,
         List<PlayerStateResponse> players,
         List<Integer> choiceOptions,
+        Integer choiceRemainingSteps,
         String winnerName,
         List<String> messages,
         Integer movedPlayerIndex,

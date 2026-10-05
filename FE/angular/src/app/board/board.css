@@ -57,4 +57,9 @@
   color: red;
 }
 
-
+.square.choice rect,
+.square.choice circle {
+  fill: #c8e6c9;
+  stroke: #2e7d32;
+  stroke-width: 3;
+}

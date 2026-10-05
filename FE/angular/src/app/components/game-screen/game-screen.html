@@ -3,12 +3,21 @@
     <p class="error">{{ errorMessage() }}</p>
   }
 
+  <app-board
+    [players]="boardPlayers()"
+    [choicePositions]="choicePositions()"
+    (choiceConfirmed)="choose($event)"
+  />
+  
   @let game = state();
   @if (game) {
     <h2>Turno di {{ game.currentPlayerName }}</h2>
     <p>Fase: {{ game.turnPhase }}</p>
     @if (game.lastRoll > 0) {
       <p>Ultimo tiro: {{ game.lastRoll }}</p>
+    }
+    @if (game.choiceRemainingSteps) {
+      <p>Passi rimasti: {{ game.choiceRemainingSteps }}</p>
     }
 
     <div class="actions">
@@ -68,5 +77,4 @@
       </tbody>
     </table>
   }
-  <app-board [players]="boardPlayers()" />
 </div>

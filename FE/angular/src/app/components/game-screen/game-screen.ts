@@ -52,6 +52,10 @@ export class GameScreen implements OnInit {
       index === animated.playerIndex ? { ...player, position: animated.position } : player);
   });
 
+  // Posizioni da evidenziare sul tabellone: solo con una scelta in attesa e nessuna azione in corso
+  readonly choicePositions = computed<number[]>(() =>
+    this.isBusy() ? [] : (this.state()?.choiceOptions ?? []));
+
   // Identificativo della partita, preso dall'URL (/game/:gameId); la rotta lo garantisce sempre presente
   private readonly gameId = this.route.snapshot.paramMap.get('gameId')!;
 

@@ -21,6 +21,10 @@ public class GameStateAssembler {
         List<String> turnMessages = game.getTurnMessages();
 
         List<Integer> choiceOptions = game.isAwaitingChoice() ? List.copyOf(game.getChoiceOptions()) : null;
+        Integer choiceRemainingSteps = game.isAwaitingChoice() && game.getChoiceRemainingSteps() > 0
+            ? game.getChoiceRemainingSteps()
+            : null;
+        
         String winnerName = game.getWinner() != null ? game.getWinner().getName() : null;
 
         List<MovementResponse> movements = game.getMovementTrace().stream()
@@ -31,7 +35,7 @@ public class GameStateAssembler {
                 : game.getPlayers().indexOf(game.getLastPlayerToMove());
 
         return new GameStateResponse(game.getCurrentPlayer().getName(), game.getTurnPhase(),
-                game.getLastRoll(), players, choiceOptions, winnerName,
+                game.getLastRoll(), players, choiceOptions, choiceRemainingSteps, winnerName,
                 turnMessages.isEmpty() ? null : turnMessages,
                 movedPlayerIndex, movements.isEmpty() ? null : movements);    
     }

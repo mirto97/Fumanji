@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 
 import { BoardResponse } from '../models/board-response';
 import { SquareResponse } from '../models/square-response';
@@ -6,7 +6,7 @@ import { BoardApi } from '../services/board-api';
 import { BOARD_COLUMNS, BOARD_LAYOUT, BOARD_ROWS, CELL_SIZE, DEFAULT_FOOTPRINT, SQUARE_FOOTPRINTS, SquareShape, } from './board-layout';
 import { SQUARE_LABELS } from './board-labels';
 import { PlayerStateResponse } from '../models/player-state-response';
-import { Pawn } from '../components/pawn/pawn';
+import { Pawn } from '../Components/pawn/pawn';
 
 
 // TODO commentare e studiare tipo peffoooooooooooooo
@@ -73,8 +73,16 @@ export class Board implements OnInit {
   // Tabellone ricevuto dal backend; resta null finché non arriva la risposta
   readonly board = signal<BoardResponse | null>(null);
 
-	// Stato dei giocatori, da cui si ricavano le pedine; lo fornisce la schermata di gioco
-	readonly players = input<PlayerStateResponse[]>([]);
+  // Stato dei giocatori, da cui si ricavano le pedine; lo fornisce la schermata di gioco
+  readonly players = input<PlayerStateResponse[]>([]);
+
+  // Posizioni tra cui scegliere (bivio o portale): si evidenziano e, selezionandole, si può confermare la direzione
+  readonly choicePositions = input<number[]>([]);
+
+  // Emesso quando il giocatore conferma la casella selezionata come destinazione
+  readonly choiceConfirmed = output<number>();
+
+  readonly choiceSet = computed(() => new Set(this.choicePositions()));
 
   // Messaggio mostrato se il tabellone non si riesce a caricare
   readonly errorMessage = signal<string | null>(null);
@@ -164,5 +172,14 @@ export class Board implements OnInit {
 
   select(position: number): void {
     this.selectedPosition.set(position);
+  }
+
+  confirmChoice(): void {
+    const position = this.selectedPosition();
+    // Si conferma solo una casella che è tra le destinazioni possibili
+    if (position === null || !this.choiceSet().has(position)) {
+      return;
+    }
+    this.choiceConfirmed.emit(position);
   }
 }

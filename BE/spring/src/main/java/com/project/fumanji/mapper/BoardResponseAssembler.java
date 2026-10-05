@@ -39,12 +39,12 @@ public class BoardResponseAssembler {
     public BoardResponse toResponse(Board board) {
         int finishPosition = board.getFinishPosition();
         List<SquareResponse> squares = board.getSquares().stream()
-                .map(square -> toSquareResponse(square, finishPosition))
+                .map(square -> toSquareResponse(board, square))
                 .toList();
         return new BoardResponse(finishPosition, squares);
     }
 
-    private SquareResponse toSquareResponse(Square square, int finishPosition) {
+    private SquareResponse toSquareResponse(Board board, Square square) {
         List<Integer> linkedPositions = square instanceof PortalSquare portal
                 ? portal.getLinkedPositions()
                 : null;
@@ -53,8 +53,8 @@ public class BoardResponseAssembler {
                 square.getPosition(),
                 TYPES.getOrDefault(square.getClass(), SquareType.BASE),
                 square.getDescription(),
-                withinBoard(square.getNextPositions(), finishPosition),
-                withinBoard(square.getPreviousPositions(), finishPosition),
+                withinBoard(square.getNextPositions(), board.getFinishPosition()),
+                board.getPreviousPositions(square.getPosition()),
                 linkedPositions);
     }
 

@@ -9,6 +9,8 @@ export interface GameStateResponse {
   players: PlayerStateResponse[];
   // Assenti dalla risposta quando non ci sono (il backend omette i valori null)
   choiceOptions?: number[];
+  // Passi ancora da fare partendo dal bivio (compreso quello della scelta); assente per i portali
+  choiceRemainingSteps?: number;
   winnerName?: string;
   // Messaggi generati dalle caselle durante il turno; assenti dalla risposta quando non ce ne sono
   messages?: string[];

@@ -57,6 +57,23 @@ class BoardAssemblerIT {
     }
 
     @Test
+    void derivesPreviousPositionsFromGraph() {
+        BoardEntity entity = boardRepository.findById(1L).orElseThrow();
+        Board board = boardAssembler.toDomain(entity);
+
+        assertThat(board.getPreviousPositions(0)).isEmpty();
+        assertThat(board.getPreviousPositions(10)).containsExactly(7);
+        assertThat(board.getPreviousPositions(40)).containsExactly(7);
+        assertThat(board.getPreviousPositions(16)).containsExactly(12);
+        assertThat(board.getPreviousPositions(22)).containsExactly(12);
+        assertThat(board.getPreviousPositions(46)).containsExactly(42);
+        assertThat(board.getPreviousPositions(52)).containsExactly(42);
+        assertThat(board.getPreviousPositions(70)).containsExactly(17, 47);
+        assertThat(board.getPreviousPositions(81)).containsExactly(33, 63, 73);
+        assertThat(board.getPreviousPositions(15)).isEmpty();
+    }
+
+    @Test
     void reconstructsAllOgBoardSquaresCorrectly() {
         BoardEntity entity = boardRepository.findById(1L).orElseThrow();
         Board board = boardAssembler.toDomain(entity);
@@ -179,6 +196,8 @@ class BoardAssemblerIT {
         assertDrinkAmount(squares, 94, 2);
         assertDrinkAmount(squares, 104, 2);
     }
+
+    // helper
 
     private void assertBivio(List<Square> squares, int position, List<Integer> next, List<Integer> previous) {
         Square square = squares.get(position);

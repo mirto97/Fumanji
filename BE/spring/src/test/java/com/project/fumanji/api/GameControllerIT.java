@@ -94,6 +94,12 @@ class GameControllerIT {
 
     // helper
 
+    private ResultActions choose(UUID gameId, int position) throws Exception {
+        return mockMvc.perform(post("/api/games/{gameId}/choice", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"position\": " + position + "}"));
+    }
+
     private void assertBivio(List<Square> squares, int position, List<Integer> next, List<Integer> previous) {
         Square square = squares.get(position);
         assertThat(square).as("position %d", position).isExactlyInstanceOf(BivioSquare.class);
@@ -312,7 +318,8 @@ class GameControllerIT {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.turnPhase", is("WAITING_CHOICE")))
-                .andExpect(jsonPath("$.choiceOptions", containsInAnyOrder(10, 40)));
+                .andExpect(jsonPath("$.choiceOptions", containsInAnyOrder(10, 40)))
+                .andExpect(jsonPath("$.choiceRemainingSteps", is(1)));
 
         mockMvc.perform(post("/api/games/{gameId}/choice", gameId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -601,7 +608,54 @@ class GameControllerIT {
                 .andExpect(jsonPath("$.movements[5].position", is(0)))
                 .andExpect(jsonPath("$.movements[5].type", is("RESET")))
                 .andExpect(jsonPath("$.movements[5].message",
-                        is("Mario è finito su uno start over: torna all'ultimo checkpoint (o alla partenza)")))
+                        is("Mario torna all'ultimo checkpoint")))
                 .andExpect(jsonPath("$.players[0].position", is(0)));
+    }
+
+    @Test
+    void offersOtherBranchWhenGoingBackToBivio() throws Exception {
+        UUID gameId = UUID.fromString(createGame());
+
+        dice.setNextRoll(8);
+        roll(gameId);
+        move(gameId, true).andExpect(jsonPath("$.turnPhase", is("WAITING_CHOICE")));
+        choose(gameId, 10)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.players[0].position", is(10)));
+
+        dice.setNextRoll(1);
+        roll(gameId);
+        move(gameId, true).andExpect(status().isOk());
+
+        dice.setNextRoll(3);
+        roll(gameId);
+        move(gameId, false)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.turnPhase", is("WAITING_CHOICE")))
+                .andExpect(jsonPath("$.choiceOptions", containsInAnyOrder(6, 40)))
+                .andExpect(jsonPath("$.choiceRemainingSteps", is(2)));
+
+        choose(gameId, 40)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.players[0].position", is(41)));
+    }
+
+    @Test
+    void offersBothOtherExitsWhenPassingMergeBivio() throws Exception {
+        UUID gameId = UUID.fromString(createGame());
+        dice.setNextRoll(14);
+
+        roll(gameId);
+        move(gameId, true).andExpect(jsonPath("$.choiceOptions", containsInAnyOrder(10, 40)));
+        choose(gameId, 10).andExpect(jsonPath("$.choiceOptions", containsInAnyOrder(16, 22)));
+        choose(gameId, 16)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.turnPhase", is("WAITING_CHOICE")))
+                .andExpect(jsonPath("$.choiceOptions", containsInAnyOrder(47, 71)))
+                .andExpect(jsonPath("$.choiceRemainingSteps", is(1)));
+        choose(gameId, 47)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.players[0].position", is(47)))
+                .andExpect(jsonPath("$.currentPlayerName", is("Luigi")));
     }
 }

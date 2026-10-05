@@ -1,6 +1,8 @@
 package com.project.fumanji.model;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 public class Board {
@@ -10,6 +12,7 @@ public class Board {
     private final boolean directionChoiceEnabled;   // se puoi scegliere di andare avanti o indietro
     private final boolean mandatoryCheckpointEnabled;   // se c'è l'obbligo di fermarsi al checkpoint
     private final boolean backwardAllowedAfterCheckpoint;   // se si può andare tornare indietro dopo aver raggiunto un cp
+    private final List<List<Integer>> previousPositions;    // TODO perchè una lista nella lista?
 
     /**
      * metodo pubblico per creare board semplici
@@ -24,6 +27,7 @@ public class Board {
         this.directionChoiceEnabled = false;
         this.mandatoryCheckpointEnabled = false;
         this.backwardAllowedAfterCheckpoint = true;
+        this.previousPositions = derivePreviousPositions(this.squares, size);
     }
 
     /**
@@ -39,6 +43,7 @@ public class Board {
         this.directionChoiceEnabled = directionChoiceEnabled;
         this.mandatoryCheckpointEnabled = mandatoryCheckpointEnabled;
         this.backwardAllowedAfterCheckpoint = backwardAllowedAfterCheckpoint;
+        this.previousPositions = derivePreviousPositions(squares, finishPosition);
     }
 
     /**
@@ -63,7 +68,46 @@ public class Board {
         return new Builder(size);
     }
 
+    // TODO studiare
+    private static List<List<Integer>> derivePreviousPositions(List<Square> squares, int finishPosition) {
+        List<List<Integer>> previous = new ArrayList<>();
+        for (int position = 0; position <= finishPosition; position++) {
+            previous.add(new ArrayList<>());
+        }
+
+        boolean[] reached = new boolean[finishPosition + 1];
+        Deque<Integer> toVisit = new ArrayDeque<>();
+        reached[0] = true;
+        toVisit.add(0);
+
+        while (!toVisit.isEmpty()) {
+            int position = toVisit.poll();
+            for (int next : squares.get(position).getNextPositions()) {
+                if (next < 0 || next > finishPosition) {
+                    continue;
+                }
+                previous.get(next).add(position);
+                if (!reached[next]) {
+                    reached[next] = true;
+                    toVisit.add(next);
+                }
+            }
+        }
+
+        return previous.stream()
+                .map(positions -> positions.stream().sorted().toList())
+                .toList();
+    }
+
     // getter
+
+    public List<Integer> getNextPositions(int position) {
+        return squares.get(position).getNextPositions();
+    }
+
+    public List<Integer> getPreviousPositions(int position) {
+        return previousPositions.get(position);
+    }
 
     public boolean isBackwardAllowedAfterCheckpoint() {
         return backwardAllowedAfterCheckpoint;
@@ -84,6 +128,9 @@ public class Board {
     public boolean isMandatoryCheckpointEnabled() {
         return mandatoryCheckpointEnabled;
     }
+
+
+    
 
     /**
      * classe per costruire le board

@@ -9,6 +9,7 @@
         <g
           class="square"
           [class.selected]="placed.square.position === selectedPosition()"
+          [class.choice]="choiceSet().has(placed.square.position)"
           (click)="select(placed.square.position)"
         >
           @if (placed.shape === 'circle') {
@@ -52,6 +53,9 @@
       <p>Tipo: {{ selected.type }}</p>
       @if (selected.description) {
         <p>{{ selected.description }}</p>
+      }
+      @if (choiceSet().has(selected.position)) {
+        <button type="button" (click)="confirmChoice()">Conferma direzione</button>
       }
     </div>
   }

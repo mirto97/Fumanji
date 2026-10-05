@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
  
 public class Game {
 
-    private static final String WASTED_TURN_AT_CHECKPOINT =
-            "Bravo {player}, hai sprecato un turno: non puoi andare indietro oltre il checkpoint";
-    private static final String WASTED_TURN_AT_START =
-            "Bravo {player}, hai sprecato un turno: non puoi andare indietro oltre la partenza";
-    private static final String STOPPED_AT_CHECKPOINT =
-            "{player} non può andare indietro oltre il checkpoint: il movimento si ferma qui";
+    private static final String WASTED_TURN_AT_CHECKPOINT = "Bravo {player}, hai sprecato un turno: non puoi andare indietro oltre il checkpoint";
+    private static final String WASTED_TURN_AT_START = "Bravo {player}, hai sprecato un turno: non puoi andare indietro oltre la partenza";
+    private static final String STOPPED_AT_CHECKPOINT = "{player} non può andare indietro oltre il checkpoint: il movimento si ferma qui";
+    private static final int NO_POSITION = -1;
 
     private final Board board;
     private final List<Player> players;
@@ -24,7 +23,6 @@ public class Game {
     private Player awaitingPlayer;  // salva il giocatore che sta aspettando di finire il turno
     private List<Integer> awaitingOptions;  // le opzioni che ha il giocatore in attesa per proseguire
     private int awaitingRemainingSteps;
-    private boolean awaitingForward;
     private boolean awaitingRespectCheckpoint;
     private boolean awaitingContinueAfterChoice;
     private final List<Movement> movementTrace = new ArrayList<>();
@@ -163,53 +161,7 @@ public class Game {
      * @param steps
      */
     public void moveForwardBy(Player player, int steps) {
-        // conta quanti steps sono rimasti nel movimento, infatti inizia da steps pieno e lo scaliamo
-        int remaining = steps;
- 
-        // ciclo per muovere il giocatore fino alla fine degli steps
-        while (remaining > 0) {
-            // prende il giocatore, la sua attuale posizione e le opzioni che ha per avanzare da lì
-            int currentPosition = player.getPosition();
-            Square currentSquare = board.getSquares().get(currentPosition);
-            List<Integer> options = currentSquare.getNextPositions();
- 
-            // se ha più di una opzione...
-            if (options.size() > 1) {
-                // ...bivio: si ferma qui, in attesa della scelta del giocatore; si prosegue dopo la scelta
-                // mando anche le opzioni, gli steps rimasti, si sta muovendo in avanti e non è MandatoryStop
-                requestBivioChoice(player, options, remaining, true, false);
-                // e returna al chiamante perchè dopo richiamerà di nuovo il metodo con gli steps restanti
-                return;
-            }
-
-            // prende la prima (e ora unica) casella successiva
-            int nextPosition = options.get(0);
- 
-            // controllo del rimbalzo oltre l'arrivo
-            if (nextPosition > board.getFinishPosition()) {
-                // rimbalzo: il passo si riflette, si muove indietro di 1 invece che avanti,
-                // senza rispettare il checkpoint (stesso comportamento aritmetico di prima)
-                movePlayerTo(player, currentPosition - 1);
-                // muove all'indietro dei rimanenti steps, ma - 1 che è l'arrivo, clean
-                moveBackwardByInternal(player, remaining - 1, false);
-                return;
-            }
- 
-            // posiziona il player nella casella successiva e scala 1 passo dai rimanenti
-            movePlayerTo(player, nextPosition);
-            remaining--;
- 
-            // fermo obbligatorio: se la regola e' attiva e la casella appena raggiunta e' un checkpoint,
-            // ci si ferma li' anche se restano passi (scartati), stesso principio del pavimento a 0 sotto
-            Square nextSquare = board.getSquares().get(nextPosition);
-            // controlla che ci sia la regola attiva nella board
-            if (board.isMandatoryCheckpointEnabled() && nextSquare.isMandatoryStop()) {
-                remaining = 0;
-            }
-        }
- 
-        // attiva gli effetti della casella su cui è finito il giocatore
-        doLandOnCurrentSquare(player);
+        walk(player, steps, true, board.isMandatoryCheckpointEnabled(), NO_POSITION);
     }
 
     /**
@@ -218,58 +170,68 @@ public class Game {
      * @param steps
      */
     public void moveBackwardBy(Player player, int steps) {
-        // controlla se c'è il blocco al cp nelle board rules...
-        boolean respectCheckpoint = board.isMandatoryCheckpointEnabled();
-        // ... e muove indietro di steps (in caso clamp al cp)
-        moveBackwardByInternal(player, steps, respectCheckpoint);
+        walk(player, steps, false, board.isMandatoryCheckpointEnabled(), NO_POSITION);
     }
- 
-    /**
-     * metodo per muovere il giocatore indietro
-     * @param player
-     * @param steps
-     * @param respectCheckpoint
-     */
-    private void moveBackwardByInternal(Player player, int steps, boolean respectCheckpoint) {
-        // steps rimasti
+
+    private void walk(Player player, int steps, boolean forward, boolean respectCheckpoint, int cameFrom) {
         int remaining = steps;
+        int previousPosition = cameFrom;
 
-        // ciclo per muovere finchè rimangono steps
         while (remaining > 0) {
+            List<Integer> exits = availableExits(player, forward, previousPosition);
 
-            if (isBackwardBlocked(player)) {
+            if (exits.isEmpty()) {
                 break;
             }
-
-            // prende la posizione del giocatore, la casella su cui è e tutte le caselle precedenti
-            int currentPosition = player.getPosition();
-            Square currentSquare = board.getSquares().get(currentPosition);
-            List<Integer> options = currentSquare.getPreviousPositions();
-
-            // se ce n'è più di 1, è un bivio
-            if (options.size() > 1) {
-                requestBivioChoice(player, options, remaining, false, respectCheckpoint);
+            if (exits.size() > 1) {
+                requestBivioChoice(player, exits, remaining, respectCheckpoint);
                 return;
             }
 
-            // prende la prima (e ora unica) casella tra le possibilità, muove il giocatore e toglie uno step
-            int nextPosition = options.get(0);
-            movePlayerTo(player, nextPosition);
+            int currentPosition = player.getPosition();
+            int targetPosition = exits.get(0);
+            boolean stepForward = board.getNextPositions(currentPosition).contains(targetPosition);
+
+            if (stepForward && targetPosition > board.getFinishPosition()) {
+                // rimbalzo: il passo si riflette, si muove indietro di 1 invece che avanti,
+                // senza rispettare il checkpoint (stesso comportamento aritmetico di sempre)
+                movePlayerTo(player, currentPosition - 1);
+                walk(player, remaining - 1, false, false, currentPosition);
+                return;
+            }
+
+            movePlayerTo(player, targetPosition);
+            previousPosition = currentPosition;
             remaining--;
 
-            // fermo obbligatorio simmetrico al forward: casella appena raggiunta, non quella di partenza
-            Square nextSquare = board.getSquares().get(nextPosition);
-            // se c'è la regola, azzera tutti gli steps rimanenti, costringendo il giocatore a fermarsi
-            if (respectCheckpoint && nextSquare.isMandatoryStop()) {
-                if (remaining > 0) {
+            boolean respect = stepForward ? board.isMandatoryCheckpointEnabled() : respectCheckpoint;
+            if (respect && board.getSquares().get(targetPosition).isMandatoryStop()) {
+                if (!stepForward && remaining > 0) {
                     addMessage(STOPPED_AT_CHECKPOINT.replace("{player}", player.getName()));
                 }
                 remaining = 0;
             }
         }
 
-        // attiva gli effetti della casella su cui si trova il player
         doLandOnCurrentSquare(player);
+    }
+
+    private List<Integer> availableExits(Player player, boolean forward, int cameFrom) {
+        int position = player.getPosition();
+        List<Integer> next = board.getNextPositions(position);
+        List<Integer> previous = board.getPreviousPositions(position);
+        boolean backwardBlocked = isBackwardBlocked(player);
+
+        Stream<Integer> candidates = cameFrom == NO_POSITION
+                ? (forward ? next : previous).stream()
+                : Stream.concat(next.stream(), previous.stream());
+
+        return candidates
+                .filter(candidate -> candidate != cameFrom)
+                .filter(candidate -> !(backwardBlocked && previous.contains(candidate) && !next.contains(candidate)))
+                .distinct()
+                .sorted()
+                .toList();
     }
  
     /**
@@ -280,12 +242,10 @@ public class Game {
      * @param forward
      * @param respectCheckpoint // TODO capisci bene
      */
-    private void requestBivioChoice(Player player, List<Integer> options, int remainingSteps,
-            boolean forward, boolean respectCheckpoint) {
+    private void requestBivioChoice(Player player, List<Integer> options, int remainingSteps, boolean respectCheckpoint) {
         awaitingPlayer = player;
         awaitingOptions = options;
         awaitingRemainingSteps = remainingSteps;
-        awaitingForward = forward;
         awaitingRespectCheckpoint = respectCheckpoint;
         awaitingContinueAfterChoice = true;
     }
@@ -301,7 +261,6 @@ public class Game {
         awaitingPlayer = player;
         awaitingOptions = options;
         awaitingRemainingSteps = 0;
-        awaitingForward = true;
         awaitingRespectCheckpoint = false;
         awaitingContinueAfterChoice = false;
     }
@@ -345,10 +304,10 @@ public class Game {
         // prende tutte le informazioni per la scelta
         Player waitingPlayer = awaitingPlayer;
         int remainingSteps = awaitingRemainingSteps;
-        boolean forward = awaitingForward;
         boolean respectCheckpoint = awaitingRespectCheckpoint;
         boolean continueAfterChoice = awaitingContinueAfterChoice;
-        
+        int choicePosition = waitingPlayer.getPosition();
+
         // resetta le opzioni e il giocatore in attesa
         awaitingPlayer = null;
         awaitingOptions = null;
@@ -362,12 +321,8 @@ public class Game {
         }
  
         // prosegue il movimento con gli steps rimanenti nella direzione scelta
-        int nextRemaining = remainingSteps - 1;
-        if (forward) {
-            moveForwardBy(waitingPlayer, nextRemaining);
-        } else {
-            moveBackwardByInternal(waitingPlayer, nextRemaining, respectCheckpoint);
-        }
+        boolean forward = board.getNextPositions(choicePosition).contains(chosenPosition);
+        walk(waitingPlayer, remainingSteps - 1, forward, respectCheckpoint, choicePosition);
     }
  
     /**
@@ -488,6 +443,10 @@ public class Game {
     
     // getter
 
+    public int getChoiceRemainingSteps() {
+        return awaitingRemainingSteps;
+    }
+    
     public synchronized void addMessage(String message) {
         turnMessages.add(message);
     }
